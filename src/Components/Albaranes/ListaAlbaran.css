@@ -1,0 +1,119 @@
+.listaprocesos {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  margin: 0;
+  /*  padding: 10px; /* Añade espacio interno */
+  list-style: none;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 25px;
+  margin-right: 20px;
+  margin-left: 20px;
+  margin-top: 20px;
+  max-height: 50vh;
+  color: black;
+  overflow-y: scroll;
+  box-sizing: content-box;
+  max-height: 330px;
+  box-shadow: 0 4px 20px 0 #202324;
+}
+
+.listaprocesos::-webkit-scrollbar {
+  width: 0px; /* Tamaño del scroll */
+  margin-right: 20px;
+}
+
+.listaprocesos::-webkit-scrollbar-track {
+  background: rgb(168, 163, 163); /* Fondo del track */
+  border-radius: 5px; /* Redondear scrollbar */
+}
+
+.listaprocesos::-webkit-scrollbar-thumb {
+  background: rgb(21, 56, 121); /* Color del thumb */
+  border-radius: 5px; /* Respeta bordes redondeados */
+  border: 2px solid transparent;
+}
+
+.listaprocesos::-webkit-scrollbar-thumb:hover {
+  background: rgb(54, 54, 54); /* Cambio de color al pasar el cursor */
+}
+.albaran {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.albaran:hover {
+  background-color: rgb(211, 211, 211);
+}
+.albaran > li {
+  flex: 1; /* Ocupa todo el espacio disponible */
+  text-align: left; /* Alinea el contenido a la izquierda */
+  padding: 0 10px; /* Opcional: añade algo de espacio interno */
+  list-style: none;
+}
+.completado {
+  color: #3f8c3d;
+}
+.proceso {
+  color: #8f6833;
+}
+.pendiente {
+  color: #fec53d;
+}
+.cancelado {
+  color: #f51313;
+}
+.circuloRal {
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.pintura {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 4px;
+  border-radius: 25px;
+}
+.left {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  height: 92%;
+  border-radius: 25px;
+  padding-top: 10px;
+  box-shadow: 0 4px 20px 0 #202324;
+}
+.pintura > .alingr {
+  flex: 1; /* Ocupa todo el espacio disponible */
+  text-align: right; /* Alinea el contenido a la izquierda */
+  padding: 0 10px; /* Opcional: añade algo de espacio interno */
+  list-style: none;
+}
+.pintura > .alingl {
+  flex: 1; /* Ocupa todo el espacio disponible */
+  text-align: left; /* Alinea el contenido a la izquierda */
+  padding: 0 10px; /* Opcional: añade algo de espacio interno */
+  list-style: none;
+}
+.dialog {
+ 
+  padding: 20px;
+  background-color: white;
+  border-radius: 25px;
+  box-shadow: 0 4px 20px 0 #202324;
+  width: 80%;
+}  
+.dialog-cliente{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; 
+  width: 80%;
+} 

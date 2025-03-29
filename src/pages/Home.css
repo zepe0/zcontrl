@@ -1,0 +1,70 @@
+.home {
+  display: grid;
+  grid-template-areas:
+    "nav nav nav nav"
+    "dashboard cuerpo cuerpo cuerpo"
+    "dashboard cuerpo cuerpo cuerpo";
+  grid-template-rows: 50px 1fr 30px;
+  grid-template-columns: 150px 1fr 1fr 0.5fr;
+  height: 100vh;
+}
+
+.nav {
+  grid-area: nav;
+}
+.dashboard {
+  grid-area: dashboard;
+}
+.dashboardlist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px;
+  padding: 10px;
+  color: black;
+  justify-content: space-between;
+  height: 95%;
+}
+.dashboarditem {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+.cuerpo {
+  grid-area: cuerpo;
+  display: grid; /* Utiliza grid dentro del área 'cuerpo' */
+  grid-template-columns: 1fr 0.3fr; /* Dos columnas internas */
+  grid-template-rows: 1fr 1fr; /* Dos filas internas */
+  gap: 10px;
+  background-color: #294763;
+  margin: 10px;
+  border-radius: 15px;
+}
+.listapinturas {
+  grid-area: pintura;
+  grid-column: 2; /* Segunda columna */
+  grid-row: 1 / span 2; /* Ocupa ambas filas */
+  display: flex;
+  flex-direction: column; /* Alinea ítems verticalmente */
+  gap: 10px;
+  margin: 10px;
+  padding: 10px;
+  color: black;
+}
+.listaalbaranes {
+  grid-column: 1; /* Primera columna */
+  grid-row: 1 / span 2; /* Ocupa ambas filas */
+  display: flex;
+  flex-direction: column; /* Alinea listas horizontalmente */
+  gap: 10px;
+}
+.listapedidos {
+  background-color: white;
+}
+.cuerpo h2,
+.listaalbaranes > h2 {
+  text-align: left; /* Alinea los títulos a la izquierda */
+  margin-left: 25px; /* Un poco de margen a la izquierda, si es necesario */
+  margin-top: 20px;
+  color: white;
+}

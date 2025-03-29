@@ -1,0 +1,155 @@
+#addPedido {
+  height: 90vh;
+  width: 80vw;
+}
+.formCliente {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.input-container {
+  position: relative;
+}
+.input-container input,
+#datosCliente input,
+#datosCliente input:focus {
+  border-top-width: 0px;
+  border-left-width: 0px;
+  border-right-width: 0px;
+}
+
+.DatosClientes {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 10px;
+}
+.tooltip {
+  position: absolute; /* Posiciona el tooltip sin afectar el flujo del documento */
+  top: calc(100% + 5px); /* Justo debajo del input */
+  left: 0; /* Alineado al borde izquierdo del input */
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
+  z-index: 9999; /* Asegura que el tooltip esté encima de otros elementos */
+  width: 100%; /* Abarca el ancho del input */
+  max-height: 150px; /* Altura máxima con scroll interno */
+  overflow-y: auto; /* Scroll si hay muchos elementos */
+  padding: 8px;
+  width: 30vw;
+}
+.dialog-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.dialog-close:hover {
+  color: red;
+}
+.tooltip ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tooltip ul li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.tooltip ul li:hover {
+  background-color: #f0f0f0;
+}
+
+.add-client-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-items: center;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.add-client-button:hover {
+  background-color: #0056b3;
+}
+.tooltip ul li.highlight {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.AlbaranMateriales {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; 
+  margin: 10px;
+  width:96%;
+  gap: 5px; 
+}
+
+.AlbaranMaterialitem {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr 1fr; 
+  align-items: center;
+  padding: 10px;
+ 
+}
+
+.AlbaranMaterialitem p {
+  margin: 0; 
+  text-align: center;
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+}
+
+.AlbaranMaterialitem:first-child {
+  font-weight: bold;
+  background-color: #f9f9f9; 
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%; 
+  box-sizing: border-box; 
+}
+small{
+  font-size: 0.7rem; 
+  color: #666; 
+}
+canvas {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: crosshair;
+}
+
+.dialog-footer { 
+  overflow-y: auto; 
+  margin-top: auto; 
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+textarea {
+  width: 100%;
+  height: 80px;
+  resize: none; 
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-left: 27px;
+  margin-top: 10px;
+}

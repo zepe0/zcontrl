@@ -1,0 +1,21 @@
+.nav {
+  position: sticky;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #294763;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.itemsnav{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+li{
+  list-style: none;
+  margin: 0 1em;
+}
+li:hover{
+  color: #646cff;
+}

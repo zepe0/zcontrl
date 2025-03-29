@@ -1,0 +1,65 @@
+.materiales {
+  display: grid;
+  grid-template-areas:
+    "nav nav "
+    "dashboard cont "
+    "dashboard cont ";
+  grid-template-rows: 50px auto;
+  grid-template-columns: 150px auto;
+  height: 100vh;
+}
+.dashboard {
+  background-color: #ecedee;
+}
+.add {
+  margin-bottom: 10px;
+}
+.materialesitem {
+  color: black;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  flex: 1; /* Ocupa todo el espacio disponible */
+  text-align: left; /* Alinea el contenido a la izquierda */
+  padding: 0 10px; /* Opcional: añade algo de espacio interno */
+  list-style: none;
+}
+.productos {
+  background-color: #ebedf0;
+  margin-right: 20px;
+  margin-left: 20px;
+  border-radius: 2px;
+  overflow-y: auto;
+}
+.materialeslist {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding: 8px;
+  margin-left: 5px;
+  list-style: none;
+}
+.materialesitemrig {
+  text-align: right;
+  padding-right: 6px;
+  color: black;
+}
+.materialesitemlef {
+  text-align: right;
+  color: black;
+}
+.cont {
+  background-color: #294763;
+  height: 93vh;
+  margin-top: 8px;
+  margin-right: 8px;
+  margin-left: 8px;
+  border-radius: 20px;
+}
+.cabezera {
+  margin-top: 6px;
+  margin-left: 20px;
+  margin-right: 20px;
+  font-size: x-large;
+  background-color: #7c8a97;
+}
