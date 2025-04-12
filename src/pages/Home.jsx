@@ -7,8 +7,8 @@ import ListaAlbaran from "../Components/Albaranes/ListaAlbaran";
 import AddPedido from "../Components/Albaranes/AddPedido";
 import io from "socket.io-client";
 import { Link } from "react-router-dom";
-
-const socket = io("http://localhost:3001");
+const API = import.meta.env.VITE_API || "localhost";
+const socket = io(`http://${API}:3001`);
 
 function Home() {
   const [pinturas, setPinturas] = useState([]);
@@ -16,13 +16,13 @@ function Home() {
 
   useEffect(() => {
     // Cargar las pinturas al inicio
-    fetch("http://localhost:3001/")
+    fetch(`http://${API}:3001/`)
       .then((res) => res.json())
       .then((data) => setPinturas(data))
       .catch((error) => console.error("Error al cargar las pinturas:", error));
 
     // Cargar los albaranes al inicio
-    fetch("http://localhost:3001/api/albaranes")
+    fetch(`http://${API}:3001/api/albaranes`)
       .then((res) => res.json())
       .then((data) => setAlbaran(data))
       .catch((error) => console.error("Error al cargar los albaranes:", error));
@@ -38,10 +38,10 @@ function Home() {
       );
     });
 
-    // Escuchar el evento `pinturaModificada` desde el servidor (si aplica)
+
     socket.on("pinturaModificada", (data) => {
       console.log("Evento recibido en Home para pintura:", data);
-      // Actualizar el estado global `pinturas`
+
       setPinturas((prevPinturas) =>
         prevPinturas.map((item) =>
           item.id === data.id ? { ...item, ...data } : item
@@ -55,9 +55,8 @@ function Home() {
     };
   }, []);
   const handleAddAlbaran = (nuevoAlbaran) => {
-   
     if (nuevoAlbaran) {
-      fetch("http://localhost:3001/api/albaranes")
+      fetch(`http://${API}:3001/api/albaranes`)
         .then((res) => res.json())
         .then((data) => {
           setAlbaran(data);

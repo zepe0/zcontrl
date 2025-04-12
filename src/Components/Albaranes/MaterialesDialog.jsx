@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./MaterialesDialog.css";
+const API = import.meta.env.VITE_API || "localhost";
 
 function MaterialesDialog({ onAddMaterial }) {
   const [material, setMaterial] = useState({
@@ -16,7 +17,7 @@ function MaterialesDialog({ onAddMaterial }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/materiales/productos")
+    fetch(`http://${API}:3001/api/materiales/productos`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);

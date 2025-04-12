@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import "./Prueva.css";
-
-const socket = io("http://localhost:3001");
+const API = import.meta.env.VITE_API || "localhost";
+const socket = io(`http://${API}:3001`);
 
 function Prueva() {
   const [productos, setProductos] = useState([]);

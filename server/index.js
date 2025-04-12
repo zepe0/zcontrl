@@ -67,5 +67,5 @@ io.on("connection", (socket) => {
 
 // Inicia el servidor HTTP
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log(`Servidor ejecutándose en http://{API}:${PORT}`);
 });

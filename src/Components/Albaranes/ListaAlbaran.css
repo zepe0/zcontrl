@@ -103,17 +103,66 @@
   list-style: none;
 }
 .dialog {
- 
   padding: 20px;
   background-color: white;
   border-radius: 25px;
   box-shadow: 0 4px 20px 0 #202324;
-  width: 80%;
-}  
-.dialog-cliente{
+  width: 90%;
+}
+.selectProceso {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 10%;
+  height: 100%;
+  margin: auto;
+  max-width: 100px; /* Limita el ancho máximo del select */
+  border-radius: 25px;
+  margin-top: 10px;
+  padding: 6px;
+}
+.dialog-cliente {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; 
-  width: 80%;
-} 
+  align-items: flex-start;
+  width: 100%;
+}
+.dialog-productos-lista {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: center;
+  width: 98%;
+  gap: 10px;
+}
+.encabezado {
+  background-color: #f9f9f9;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border: #121312 1px solid;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.observaciones {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  width: 50%;
+  border: #202324 1px solid;
+  border-radius: 15px;
+  padding: 10px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+.observacionesTitulo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  font-weight: bold;
+  margin-bottom: 10px;
+}

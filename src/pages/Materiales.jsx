@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import Nav from "../Components/Nav";
 import "./Materiales.css";
 import { useEffect, useState } from "react";
-
+const API = import.meta.env.VITE_API || "localhost";
 function Marteriales() {
   const [productos, setProductos] = useState([]);
   useEffect(() => {
-    fetch("http://localhost:3001/api/materiales/productos")
+    fetch(`http://${API}:3001/api/materiales/productos`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);

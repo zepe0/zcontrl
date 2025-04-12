@@ -3,7 +3,7 @@ import "./AddPedido.css";
 import ClienteSearch from "../Clientes/ClienteSearch";
 import MaterialesDialog from "./MaterialesDialog";
 import SignaturePad from "./SignaturePad";
-
+const API = import.meta.env.VITE_API || "localhost";
 function AddPedido({ onAddAlbaran }) {
   const [clientes, setClientes] = useState([]);
   const [materiales, setMateriales] = useState([]);
@@ -30,7 +30,7 @@ function AddPedido({ onAddAlbaran }) {
 
   const [clienteActualizado, setClienteActualizado] = useState(0);
   useEffect(() => {
-    fetch("http://localhost:3001/api/cliente")
+    fetch(`http://${API}:3001/api/cliente`)
       .then((res) => res.json())
       .then((cliente) => setClientes(cliente));
   }, []);
@@ -68,7 +68,7 @@ function AddPedido({ onAddAlbaran }) {
       dir: e.target.dir.value,
     };
 
-    const res = await fetch("http://localhost:3001/api/cliente/add", {
+    const res = await fetch(`http://${API}:3001/api/cliente/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoCliente),
@@ -124,7 +124,7 @@ function AddPedido({ onAddAlbaran }) {
     }));
   };
   const Guardaralbaran = async () => {
-    const res = await fetch("http://localhost:3001/api/albaran/add", {
+    const res = await fetch(`http://${API}:3001/api/albaran/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(pedido),
@@ -159,10 +159,10 @@ function AddPedido({ onAddAlbaran }) {
         dir: "",
       });
       setClientes([]);
-      fetch("http://localhost:3001/api/cliente")
+      fetch(`http://{API}:3001/api/cliente`)
         .then((res) => res.json())
         .then((cliente) => setClientes(cliente));
-      fetch("http://localhost:3001/api/materiales/productos")
+      fetch(`http://{API}:3001/api/materiales/productos`)
         .then((res) => res.json())
         .then((data) => setMateriales(data));
     }
@@ -240,6 +240,7 @@ function AddPedido({ onAddAlbaran }) {
             <p>Ral</p>
           </li>
           {pedido.albaran.map((material, index) => (
+         
             <li key={index} className="AlbaranMaterialitem">
               <p>{material.ref}</p> <p>{material.mat} </p>
               <p>

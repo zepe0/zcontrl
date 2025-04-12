@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./ListaAlbaran.css";
-
+const API = import.meta.env.VITE_API || "localhost";
 function ListaAlbaran({ albaran }) {
   const [albaranfind, setAlbaranfind] = useState([]);
 
@@ -17,7 +17,7 @@ function ListaAlbaran({ albaran }) {
     dialog.showModal();
     /*   const albaranfind = albaran.find((item) => item.id === id); */
 
-    fetch(`http://localhost:3001/api/albaran/${id}`, {
+    fetch(`http://${API}:3001/api/albaran/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -44,7 +44,7 @@ function ListaAlbaran({ albaran }) {
     const dialog = document.querySelector(".dialog");
     const proceso = document.getElementById("proceso").value;
 
-    fetch(`http://localhost:3001/api/albaranes/edit`, {
+    fetch(`http://{API}:3001/api/albaranes/edit`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@ function ListaAlbaran({ albaran }) {
 
           {albaranfind.cliente && (
             <section className="dialog-cliente">
-              <select name="proceso" id="proceso">
+              <select name="proceso" id="proceso" className="selectProceso">
                 <option value={albaranfind.cliente.proceso}>
                   {albaranfind.cliente.proceso}
                 </option>
@@ -95,7 +95,7 @@ function ListaAlbaran({ albaran }) {
                   ))}
               </select>
               <div className="dialog-cliente">
-                <p>{albaranfind.productos[0].idALbaran}</p>
+                <p>{albaranfind.productos[0].idALbaran} </p>
                 <p>{albaranfind.cliente.nombre}</p>
                 <p>{albaranfind.cliente.Nif}</p>
                 <p>{albaranfind.cliente.dir}</p>
@@ -104,21 +104,36 @@ function ListaAlbaran({ albaran }) {
             </section>
           )}
           <div className="dialog-productos">
-            <hr></hr>
-            <h3>Productos</h3>
-            <li>ref Nombre uni obra</li>
-            <ul className="dialog-productos-lista">
+            <h3>Datos Albaran</h3>
+
+            <ul>
+              <li className="dialog-productos-lista ">
+                <p>Nombre</p>
+                <p>Unidades</p>
+                <p>Ref Obra</p>
+                <p>Ral</p>
+              </li>
+
               {albaranfind.productos &&
                 albaranfind.productos.map((producto) => (
-                  <li key={producto.idMaterial}>
-                    {producto.idMaterial} {producto.nombreMaterial}{" "}
-                    {producto.cantidad} {producto.uni} {producto.refObra}
+                  <li
+                    key={producto.idMaterial}
+                    className="dialog-productos-lista"
+                  >
+                    <p className="Nombre">{producto.nombreMaterial}</p>
+                    <p className="">{producto.cantidad} </p>
+
+                    <p className="refOb">{producto.refObra}</p>
+                    <p className="ral">{producto.ral}</p>
                   </li>
                 ))}
             </ul>
             <hr></hr>
+            <h3 className="observacionesTitulo">Observaciones</h3>
             {albaranfind.productos ? (
-              <p>{albaranfind.productos[0].observaciones} </p>
+              <p className="observaciones">
+                {albaranfind.productos[0].observaciones}{" "}
+              </p>
             ) : null}
           </div>
           <p></p>

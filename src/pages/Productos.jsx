@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-
+const API = import.meta.env.VITE_API || "localhost";
 function Home() {
   const [productos, setProductos] = useState([]);
 
   useEffect(() => {
-    fetch(process.env.API + "/productos")
+    fetch(`${API}/productos`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Error al obtener los datos");
