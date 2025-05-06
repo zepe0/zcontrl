@@ -29,7 +29,7 @@ function Home() {
 
     // Escuchar el evento `albaranModificado` desde el servidor
     socket.on("albaranModificado", (data) => {
-      console.log("Evento recibido en Home:", data);
+      console.log("Evento recibido en Home:");
       // Actualizar el estado global `albaran`
       setAlbaran((prevAlbaranes) =>
         prevAlbaranes.map((item) =>
@@ -38,9 +38,8 @@ function Home() {
       );
     });
 
-
     socket.on("pinturaModificada", (data) => {
-      console.log("Evento recibido en Home para pintura:", data);
+      console.log("Evento recibido en Home para pintura:");
 
       setPinturas((prevPinturas) =>
         prevPinturas.map((item) =>
@@ -49,9 +48,15 @@ function Home() {
       );
     });
 
+    socket.on("actualizarAlbaranes", (data) => {
+      console.log("Actualización de albaranes recibida:");
+      setAlbaran(data);
+    });
+
     return () => {
       socket.off("albaranModificado");
       socket.off("pinturaModificada");
+      socket.off("actualizarAlbaranes");
     };
   }, []);
   const handleAddAlbaran = (nuevoAlbaran) => {
@@ -60,6 +65,7 @@ function Home() {
         .then((res) => res.json())
         .then((data) => {
           setAlbaran(data);
+          socket.emit("nuevoAlbaran", data);
         })
         .catch((error) =>
           console.error("Error al cargar los albaranes:", error)
@@ -73,7 +79,9 @@ function Home() {
       <div className="dashboard">
         <ul className="dashboardlist">
           <div className="dashboarditem">
-            <li>Pintura</li>
+            <li>
+              <Link to="/Pinturas">Pintura</Link>
+            </li>
             <li>Albaranes</li>
             <li>
               <Link to="/Materiales">Material</Link>

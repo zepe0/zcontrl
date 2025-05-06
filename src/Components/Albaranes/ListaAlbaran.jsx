@@ -44,7 +44,7 @@ function ListaAlbaran({ albaran }) {
     const dialog = document.querySelector(".dialog");
     const proceso = document.getElementById("proceso").value;
 
-    fetch(`http://{API}:3001/api/albaranes/edit`, {
+    fetch(`http://${API}:3001/api/albaranes/edit`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -160,13 +160,13 @@ function ListaAlbaran({ albaran }) {
                   : albaran.proceso === "Pendiente"
                   ? "pendiente"
                   : albaran.proceso === "En Limpieza"
-                  ? "Limpieza"
+                  ? "limpieza"
                   : albaran.proceso === "En Pintura"
-                  ? "Pintura"
+                  ? "pintura"
                   : albaran.proceso === "En Almacen"
                   ? "Almacen"
                   : albaran.proceso === "Entregado"
-                  ? "Entregado"
+                  ? "completado"
                   : "cancelado"
               }
             >

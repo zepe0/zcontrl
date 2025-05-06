@@ -14,7 +14,6 @@ function ClienteSearch({
   // Sincroniza el estado del input con el cliente seleccionado
   useEffect(() => {
     if (clienteSeleccionado) {
-    
       setShowTooltip(false); // Oculta el tooltip si hay un cliente seleccionado
     }
   }, [clienteSeleccionado]);
@@ -26,6 +25,7 @@ function ClienteSearch({
       const filtered = clientes.filter((cliente) =>
         cliente.nombre.toLowerCase().includes(value.toLowerCase())
       );
+     
       setFilteredClientes(filtered);
       setShowTooltip(true);
       setSelectedIndex(-1);
@@ -79,6 +79,7 @@ function ClienteSearch({
                   className={index === selectedIndex ? "highlight" : ""}
                   onClick={() => {
                     onClienteSeleccionado(cliente);
+                    setSearchValue(cliente.nombre); // Actualiza el input con el nombre del cliente
                     setShowTooltip(false);
                   }}
                 >

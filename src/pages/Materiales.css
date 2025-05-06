@@ -15,29 +15,37 @@
   margin-bottom: 10px;
 }
 .materialesitem {
-  color: black;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  flex: 1; /* Ocupa todo el espacio disponible */
-  text-align: left; /* Alinea el contenido a la izquierda */
-  padding: 0 10px; /* Opcional: añade algo de espacio interno */
-  list-style: none;
+  text-align: left; /* Alinea el texto a la derecha */
+  color: #333; /* Color del texto */
+  font-size: 14px;
 }
 .productos {
-  background-color: #ebedf0;
-  margin-right: 20px;
-  margin-left: 20px;
-  border-radius: 2px;
-  overflow-y: auto;
+  display: flex; /* Cambia a flexbox */
+  flex-direction: column; /* Alinea los elementos en columna */
+  align-items: center; /* Centra horizontalmente los elementos */
+  justify-content: flex-start; /* Alinea los elementos al inicio verticalmente */
+  background-color: #ebedf0; /* Fondo claro */
+  margin: 20px auto; /* Centra horizontalmente con margen */
+  padding: 20px; /* Espaciado interno */
+  border-radius: 10px; /* Bordes redondeados */
+  overflow-y: auto; /* Habilita scroll si hay muchos elementos */
+  max-height: 70vh; /* Limita la altura máxima */
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
 }
 .materialeslist {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  padding: 8px;
-  margin-left: 5px;
-  list-style: none;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr;
+  gap: 10px;
+  width: 99%;
+  padding: 6px;
+  background-color: white;
+  border-radius: 5px;
+  margin-top: 10px;
 }
 .materialesitemrig {
   text-align: right;
@@ -57,9 +65,23 @@
   border-radius: 20px;
 }
 .cabezera {
-  margin-top: 6px;
-  margin-left: 20px;
-  margin-right: 20px;
-  font-size: x-large;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr;
+  gap: 10px;
+  width: 91%;
+  padding: 10px;
+  margin-left: 67px;
   background-color: #7c8a97;
+  border-radius: 5px;
+  margin-top: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+.margin-left {
+  margin-left: 12px;
+}
+.nombre-cabezera {
+ font-size: 16px;
 }

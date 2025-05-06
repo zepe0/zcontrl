@@ -1,15 +1,16 @@
 import { Link } from "react-router-dom";
 import Nav from "../Components/Nav";
 import "./Materiales.css";
+import "../ral.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
 const API = import.meta.env.VITE_API || "localhost";
-function Marteriales() {
+function Pinturas() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
   useEffect(() => {
-    fetch(`http://${API}:3001/api/materiales/productos`)
+    fetch(`http://${API}:3001/`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
@@ -54,7 +55,8 @@ function Marteriales() {
       })
       .catch((error) => console.error("Error:", error));
   };
-  const editMaterial = (id) => {
+  
+  const editpintura= (id) => {
     const material = productos.find((material) => material.id === id);
     setInputs(material);
     setEstado(true);
@@ -66,7 +68,7 @@ function Marteriales() {
       <div className="dashboard">
         <ul className="dashboardlist">
           <div className="dashboarditem">
-            <Link to="/Pinturas">Pintura</Link>
+            <li>Pintura</li>
             <li>Albaranes</li>
             <li>
               <Link to="/Materiales">Material</Link>
@@ -80,7 +82,7 @@ function Marteriales() {
         </ul>
       </div>
       <div className="cont">
-        <h1>Materiales</h1>
+    
         <button className="add" onClick={() => addMaterial()}>
           Añadir
         </button>
@@ -92,18 +94,18 @@ function Marteriales() {
         </li>
         {productos.length > 0 ? (
           <ul className="productos">
-            {productos.map((material) => (
+            {productos.map((pintura) => (
               <li
-                key={material.id}
+                key={pintura.id}
                 className="materialeslist"
-                onClick={() => editMaterial(material.id)}
+                onClick={() => editpintura(pintura.id)}
               >
-                <p className="materialesitem ">{material.nombre}</p>
-                <p className="materialesitem">{material.uni}</p>
-                <p className="materialesitem">{material.refObra}</p>
-                <p className="materialesitem">
-                  {material.precio ? material.precio : -""} €
-                </p>
+                <p className="materialesitem  ">{pintura.ral}</p>
+                <p className="materialesitem ">{pintura.marca}</p>
+                <p className="materialesitem ">{pintura.stock}</p>
+                <p
+                  className={`${pintura.ral.replace(/\s+/g, "-")} circuloRal`}
+                ></p>
               </li>
             ))}
           </ul>
@@ -111,7 +113,7 @@ function Marteriales() {
           <p>Cargando...</p>
         )}
       </div>
-      <dialog className="addmaterial">
+      <dialog className="addpintura">
         <h2>Añadir Material</h2>
         <form>
           <label htmlFor="nombre">Nombre</label>
@@ -138,4 +140,4 @@ function Marteriales() {
   );
 }
 
-export default Marteriales;
+export default Pinturas;

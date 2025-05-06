@@ -78,7 +78,7 @@ router.post("/add", async (req, res) => {
     // Insertar materiales en la tabla AlbaranMateriales
     const queryAlbaranMateriales =
       "INSERT INTO AlbaranMateriales (idAlbaran, idMaterial, cantidad,ral,observaciones) VALUES (?, ?, ?,?,?)";
-      console.log(observaciones)
+     
     for (const material of albaran) {
       const { ref, unid, Ral } = material;
    

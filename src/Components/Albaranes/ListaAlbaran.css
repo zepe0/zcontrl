@@ -54,17 +54,26 @@
   padding: 0 10px; /* Opcional: añade algo de espacio interno */
   list-style: none;
 }
-.completado {
-  color: #3f8c3d;
+.cancelado {
+  color: #b71c1c; /* Rojo oscuro */
 }
-.proceso {
-  color: #8f6833;
+.almacen {
+  color: #ff0000; /* Rojo */
 }
 .pendiente {
-  color: #fec53d;
+  color: #ffc107; /* Amarillo */
 }
-.cancelado {
-  color: #f51313;
+.proceso {
+  color: #ff9800; /* Naranja */
+}
+.limpieza {
+  color: #2196f3; /* Azul */
+}
+.pintura {
+  color: #149c91; /* Verde claro */
+}
+.completado {
+  color: #2e7d32; /* Verde oscuro */
 }
 .circuloRal {
   min-width: 20px;

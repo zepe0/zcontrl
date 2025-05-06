@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
 import { createServer } from "http";
 import { Server } from "socket.io";
 
@@ -16,10 +17,10 @@ import addCliente from "./query/Clientes/addCliente.js";
 import getCliente from "./query/Clientes/getCliente.js";
 import newAlbaran from "./query/Albaranes/newAlbaran.js";
 import getAlbaran from "./query/Albaranes/getAlbaran.js";
-dotenv.config();
 
 const app = express();
 const PORT = 3001;
+const API = process.env.API || "localhost";
 
 // Middleware para habilitar CORS (necesario para conectar con React en desarrollo)
 app.use(cors());
@@ -51,10 +52,15 @@ app.use("/api/cliente", getCliente);
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
+  // Escuchar el evento "nuevoAlbaran" desde el cliente
+  socket.on("nuevoAlbaran", (data) => {
+    console.log("Nuevo albarán recibido:", data);
+
+    // Emitir el evento a todos los clientes conectados
+    io.emit("actualizarAlbaranes", data);
+  });
   // Escuchar un evento desde el cliente
   socket.on("modificarProducto", (data) => {
-    console.log("Datos recibidos:", data);
-
     // Notificar a todos los clientes conectados sobre el cambio
     io.emit("actualizarProductos", data);
   });
@@ -67,5 +73,5 @@ io.on("connection", (socket) => {
 
 // Inicia el servidor HTTP
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor ejecutándose en http://{API}:${PORT}`);
+  console.log(`Servidor ejecutándose en http://${API}:${PORT}`);
 });

@@ -11,7 +11,7 @@ function Prueva() {
   useEffect(() => {
     // Escucha actualizaciones desde el servidor
     socket.on("actualizarProductos", (data) => {
-      console.log("Productos actualizados:", data);
+     
       setProductos((prev) => [...prev, data]); // Actualiza la lista de productos
     });
 
