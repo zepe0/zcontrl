@@ -8,6 +8,7 @@ function Marteriales() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
+  const [materialE, setMaterial] = useState([]);
   useEffect(() => {
     fetch(`http://${API}:3001/api/materiales/productos`)
       .then((res) => res.json())
@@ -98,7 +99,7 @@ function Marteriales() {
                 className="materialeslist"
                 onClick={() => editMaterial(material.id)}
               >
-                <p className="materialesitem ">{material.nombre}</p>
+                <p className="materialesitem" >{material.nombre}</p>
                 <p className="materialesitem">{material.uni}</p>
                 <p className="materialesitem">{material.refObra}</p>
                 <p className="materialesitem">

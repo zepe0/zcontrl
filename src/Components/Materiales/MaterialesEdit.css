@@ -1,4 +1,26 @@
-#marca{
-    width: 100%;
-    margin-bottom: 10px;
+#marca,
+#stock,
+#ral,
+
+#nombre,
+#descripcion,
+#precio,
+#uni,
+#consumo,
+#refObra {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  margin-left: 8px;
+}
+#id{
+  display: none;
+}
+.editmaterial-form {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
 }
