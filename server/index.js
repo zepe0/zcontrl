@@ -17,6 +17,8 @@ import addCliente from "./query/Clientes/addCliente.js";
 import getCliente from "./query/Clientes/getCliente.js";
 import newAlbaran from "./query/Albaranes/newAlbaran.js";
 import getAlbaran from "./query/Albaranes/getAlbaran.js";
+import editPintura from "./query/Pintura/editPintura.js";
+import editMaterial from "./query/Material/editMaterial.js";
 
 const app = express();
 const PORT = 3001;
@@ -41,12 +43,17 @@ app.use("/api/albaranes", getAlbaranes);
 app.use("/api/albaran", newAlbaran);
 app.use("/api/albaran", getAlbaran);
 app.use("/api/albaranes", editAlbaran(io));
+
 app.use("/api/materiales", addMaterial(io));
 app.use("/api/materiales", getMaterial);
+app.use("/api/materiales/edit", editMaterial);
+
 app.use("/api/cliente", getClientes);
 app.use("/api/cliente", addCliente(io));
-app.use("/", getPinturas);
 app.use("/api/cliente", getCliente);
+
+app.use("/", getPinturas);
+app.use("/api/pintura/edit", editPintura);
 
 // Configurar los eventos de Socket.IO
 io.on("connection", (socket) => {

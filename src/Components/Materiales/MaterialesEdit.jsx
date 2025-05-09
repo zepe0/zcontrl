@@ -1,7 +1,14 @@
 import { useEffect } from "react";
 import "./MaterialesEdit.css";
+;
 
-function MarterialesEdit({ inputs, estado, setEstado }) {
+function MarterialesEdit({
+  inputs,
+  estado,
+  setEstado,
+  reload,
+  reloadMaterial,
+}) {
   useEffect(() => {
     const dialog = document.querySelector(".editmaterial");
     if (estado !== null) {
@@ -9,10 +16,10 @@ function MarterialesEdit({ inputs, estado, setEstado }) {
     } else {
       dialog.close();
     }
-  }, [estado]); // Escucha cambios en `estado`
+  }, [estado]);
 
   const closeEditMaterial = () => {
-    setEstado(null); // Actualiza el estado a `null` para cerrar el modal
+    setEstado(null);
   };
   const API = import.meta.env.VITE_API || "localhost";
   const EditMaterial = (e) => {
@@ -20,18 +27,13 @@ function MarterialesEdit({ inputs, estado, setEstado }) {
     const comparador = e.target.ral ? "pintura" : "materiales";
 
     const inputs = e.target.elements;
-   const formData={};
+    const formData = {};
     const inputsArray = Array.from(inputs);
     inputsArray.forEach((input) => {
       const name = input.name;
-      const value = input.value || input.placeholder; 
-    if(name)
-      formData[name] = value;
-
+      const value = input.value || input.placeholder;
+      if (name) formData[name] = value;
     });
-    debugger    
-
-   
 
     fetch(`http://${API}:3001/api/${comparador}/edit`, {
       method: "PUT",
@@ -39,7 +41,7 @@ function MarterialesEdit({ inputs, estado, setEstado }) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        formData
+        formData,
       }),
     })
       .then((res) => res.json())
@@ -49,9 +51,16 @@ function MarterialesEdit({ inputs, estado, setEstado }) {
           return;
         }
         if (data.exito) {
-          console.log(data.exito);
+          
+          setEstado(null);
+          if (data.exito.includes("pintura")) {
+            reload();
+           
+          } else if (data.exito.includes("Material")) {
+            reloadMaterial();
+            
+          }
         }
-        dialog.close();
       })
       .catch((error) => console.error("Error:", error));
   };
@@ -61,30 +70,40 @@ function MarterialesEdit({ inputs, estado, setEstado }) {
         X
       </button>
       <form className="editmaterial-form" onSubmit={(e) => EditMaterial(e)}>
-        {Object.entries(inputs).map(
-          ([key, value]) =>
-            key !== "id" && (
-              <div key={key}>
-                <label htmlFor={key}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </label>
-                <input
-                  type="text"
-                  name={key}
-                  id={key}
-                  placeholder={value != null ? value : "-"}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setEstado((prevState) => ({
-                      ...prevState,
-                      [key]: newValue,
-                    }));
-                  }}
-                  value={estado ? estado[key] : ""}
-                />
-              </div>
-            )
-        )}
+        {Object.entries(inputs).map(([key, value]) => {
+          if (key === "id") {
+            return (
+              <input
+                type="hidden"
+                name={key}
+                id={key}
+                value={value != null ? value : "-"}
+                key={key}
+              />
+            );
+          }
+          return (
+            <div key={key}>
+              <label htmlFor={key}>
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </label>
+              <input
+                type="text"
+                name={key}
+                id={key}
+                placeholder={value != null ? value : "-"}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setEstado((prevState) => ({
+                    ...prevState,
+                    [key]: newValue,
+                  }));
+                }}
+                value={estado ? estado[key] : ""}
+              />
+            </div>
+          );
+        })}
         <button type="submit">Guardar</button>
       </form>
     </dialog>

@@ -4,19 +4,23 @@ import "./Materiales.css";
 import "../ral.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
+import { toast } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 function Pinturas() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
+  const getPinturas = () => {
+      fetch(`http://${API}:3001/`)
+        .then((res) => res.json())
+        .then((data) => {
+          setProductos(data);
+          toast.success("Pintura editada correctamente")
+        });
+    };
   useEffect(() => {
-    fetch(`http://${API}:3001/`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProductos(data);
-      });
+    getPinturas();
   }, []);
-
   const addMaterial = () => {
     const dialog = document.querySelector(".addmaterial");
     dialog.showModal();
@@ -87,10 +91,10 @@ function Pinturas() {
           Añadir
         </button>
         <li className="cabezera ">
-          <p className="materialesitem nombre-cabezera margin-left">Nombre</p>
-          <p className="materialesitem nombre-cabezera">Uni</p>
-          <p className="materialesitem nombre-cabezera">Ref-Obra</p>
-          <p className="materialesitem nombre-cabezera ">Precio</p>
+          <p className="materialesitem nombre-cabezera margin-left">Ral</p>
+          <p className="materialesitem nombre-cabezera">Marca</p>
+          <p className="materialesitem nombre-cabezera">Stock</p>
+          <p className="materialesitem nombre-cabezera ">Ref</p>
         </li>
         {productos.length > 0 ? (
           <ul className="productos">
@@ -104,7 +108,7 @@ function Pinturas() {
                 <p className="materialesitem ">{pintura.marca}</p>
                 <p className="materialesitem ">{pintura.stock}</p>
                 <p
-                  className={`${pintura.ral.replace(/\s+/g, "-")} circuloRal`}
+                  className={`${pintura.ral.replace(/\s+/g, "-")} `}
                 ></p>
               </li>
             ))}
@@ -135,6 +139,7 @@ function Pinturas() {
         inputs={inputs || {}}
         estado={estado}
         setEstado={setEstado}
+        reload={getPinturas}
       />
     </section>
   );

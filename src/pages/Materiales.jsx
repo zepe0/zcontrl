@@ -3,20 +3,27 @@ import Nav from "../Components/Nav";
 import "./Materiales.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
+import { toast } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 function Marteriales() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
   const [materialE, setMaterial] = useState([]);
-  useEffect(() => {
+
+  const getMaterial = () => {
     fetch(`http://${API}:3001/api/materiales/productos`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProductos(data);
-      });
+    .then((res) => res.json())
+    .then((data) => {
+      setProductos(data);
+      toast.success("Materiales cargados correctamente")
+    });
+  }
+  useEffect(() => {
+    getMaterial();
   }, []);
 
+ 
   const addMaterial = () => {
     const dialog = document.querySelector(".addmaterial");
     dialog.showModal();
@@ -134,6 +141,7 @@ function Marteriales() {
         inputs={inputs || {}}
         estado={estado}
         setEstado={setEstado}
+        reloadMaterial={getMaterial} 
       />
     </section>
   );
