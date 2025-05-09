@@ -15,9 +15,12 @@ function Pinturas() {
         .then((res) => res.json())
         .then((data) => {
           setProductos(data);
-          toast.success("Pintura editada correctamente")
+       
         });
     };
+    const notifipintura = () => {
+      toast.success("Pintura editada correctamente");
+    }
   useEffect(() => {
     getPinturas();
   }, []);
@@ -90,26 +93,26 @@ function Pinturas() {
         <button className="add" onClick={() => addMaterial()}>
           Añadir
         </button>
-        <li className="cabezera ">
-          <p className="materialesitem nombre-cabezera margin-left">Ral</p>
+        <li className="cabezeraPintura ">
+          <p className="materialesitem nombre-cabezera margin-left">Ref</p>
+          <p className="materialesitem nombre-cabezera margin-left">RAL</p>
           <p className="materialesitem nombre-cabezera">Marca</p>
-          <p className="materialesitem nombre-cabezera">Stock</p>
-          <p className="materialesitem nombre-cabezera ">Ref</p>
+          <p className="materialesitem nombre-cabezera nombre-cabezera-right">Stock</p>
         </li>
         {productos.length > 0 ? (
           <ul className="productos">
             {productos.map((pintura) => (
               <li
                 key={pintura.id}
-                className="materialeslist"
+                className="pinturalist"
                 onClick={() => editpintura(pintura.id)}
               >
-                <p className="materialesitem  ">{pintura.ral}</p>
-                <p className="materialesitem ">{pintura.marca}</p>
-                <p className="materialesitem ">{pintura.stock}</p>
                 <p
                   className={`${pintura.ral.replace(/\s+/g, "-")} `}
                 ></p>
+                <p className="materialesitem ">{pintura.ral}</p>
+                <p className="materialesitem ">{pintura.marca}</p>
+                <p className={`${pintura.stock < 10 ? "warning":""} materialesitem nombre-cabezera-right`}>{pintura.stock}</p>
               </li>
             ))}
           </ul>
@@ -140,6 +143,7 @@ function Pinturas() {
         estado={estado}
         setEstado={setEstado}
         reload={getPinturas}
+        notifipintura={notifipintura}
       />
     </section>
   );

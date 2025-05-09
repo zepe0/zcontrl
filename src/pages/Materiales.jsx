@@ -9,21 +9,21 @@ function Marteriales() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
-  const [materialE, setMaterial] = useState([]);
 
   const getMaterial = () => {
     fetch(`http://${API}:3001/api/materiales/productos`)
-    .then((res) => res.json())
-    .then((data) => {
-      setProductos(data);
-      toast.success("Materiales cargados correctamente")
-    });
-  }
+      .then((res) => res.json())
+      .then((data) => {
+        setProductos(data);
+      });
+  };
   useEffect(() => {
     getMaterial();
   }, []);
+  const notifi = () => {
+    toast.success("Materiales editado correctamente");
+  };
 
- 
   const addMaterial = () => {
     const dialog = document.querySelector(".addmaterial");
     dialog.showModal();
@@ -88,7 +88,6 @@ function Marteriales() {
         </ul>
       </div>
       <div className="cont">
-        <h1>Materiales</h1>
         <button className="add" onClick={() => addMaterial()}>
           Añadir
         </button>
@@ -106,7 +105,7 @@ function Marteriales() {
                 className="materialeslist"
                 onClick={() => editMaterial(material.id)}
               >
-                <p className="materialesitem" >{material.nombre}</p>
+                <p className="materialesitem">{material.nombre}</p>
                 <p className="materialesitem">{material.uni}</p>
                 <p className="materialesitem">{material.refObra}</p>
                 <p className="materialesitem">
@@ -141,7 +140,8 @@ function Marteriales() {
         inputs={inputs || {}}
         estado={estado}
         setEstado={setEstado}
-        reloadMaterial={getMaterial} 
+        reloadMaterial={getMaterial}
+        notifi={notifi}
       />
     </section>
   );

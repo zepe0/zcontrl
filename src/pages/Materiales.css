@@ -13,6 +13,7 @@
 }
 .add {
   margin-bottom: 10px;
+  margin-top: 16px;
 }
 .materialesitem {
   text-align: left; /* Alinea el texto a la derecha */
@@ -46,6 +47,31 @@
   background-color: white;
   border-radius: 5px;
   margin-top: 10px;
+}
+.pinturalist {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  gap: 10px;
+  width: 99%;
+  padding: 6px;
+  background-color: white;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+.cabezeraPintura {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  gap: 12px;
+  width: 91%;
+  padding: 6px;
+  background-color: white;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-left: 68px;
+  font-weight: bold;
+  text-align: center;
+  background-color: #7c8a97;
+  padding: 10px;
 }
 .materialesitemrig {
   text-align: right;
@@ -83,5 +109,15 @@
   margin-left: 12px;
 }
 .nombre-cabezera {
- font-size: 16px;
+  font-size: 16px;
+}
+.nombre-cabezera-right {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+.warning {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }

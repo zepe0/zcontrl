@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import "./MaterialesEdit.css";
-;
-
 function MarterialesEdit({
   inputs,
   estado,
   setEstado,
   reload,
   reloadMaterial,
+  notifi,
+  notifipintura,
 }) {
   useEffect(() => {
     const dialog = document.querySelector(".editmaterial");
@@ -51,14 +51,13 @@ function MarterialesEdit({
           return;
         }
         if (data.exito) {
-          
           setEstado(null);
-          if (data.exito.includes("pintura")) {
+          if (data.exito.includes("Pintura")) {
             reload();
-           
+            notifipintura();
           } else if (data.exito.includes("Material")) {
             reloadMaterial();
-            
+            notifi();
           }
         }
       })

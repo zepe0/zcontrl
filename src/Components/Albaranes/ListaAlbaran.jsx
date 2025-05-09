@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./ListaAlbaran.css";
+import { toast } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 function ListaAlbaran({ albaran }) {
   const [albaranfind, setAlbaranfind] = useState([]);
@@ -26,18 +27,25 @@ function ListaAlbaran({ albaran }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          console.error("Error:", data.error);
+          toast.error("Error:", data.error);
           return;
         }
         setAlbaranfind(data);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => toast.error("Error:", error));
   }
 
   function closedialog() {
     const dialog = document.querySelector(".dialog");
     dialog.close();
     setAlbaranfind([]);
+  }
+  const restaKG = (a, b) => {
+
+    
+    const resultado = a - b;
+    return resultado;
+  
   }
 
   function saveProceso() {
@@ -54,15 +62,15 @@ function ListaAlbaran({ albaran }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          console.error("Error:", data.error);
+          toast.error("Error:", data.error);
           return;
         }
         if (data.exito) {
-          console.log(data.exito);
+          toast.success(data.exito);
         }
         dialog.close();
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => toast.error("Error:", error));
   }
 
   return (

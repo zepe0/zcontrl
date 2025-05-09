@@ -7,6 +7,7 @@ import ListaAlbaran from "../Components/Albaranes/ListaAlbaran";
 import AddPedido from "../Components/Albaranes/AddPedido";
 import io from "socket.io-client";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 const socket = io(`http://${API}:3001`);
 
@@ -19,13 +20,13 @@ function Home() {
     fetch(`http://${API}:3001/`)
       .then((res) => res.json())
       .then((data) => setPinturas(data))
-      .catch((error) => console.error("Error al cargar las pinturas:", error));
+      .catch((error) => toast.error("Error al cargar las pinturas:", error));
 
     // Cargar los albaranes al inicio
     fetch(`http://${API}:3001/api/albaranes`)
       .then((res) => res.json())
       .then((data) => setAlbaran(data))
-      .catch((error) => console.error("Error al cargar los albaranes:", error));
+      .catch((error) => toast.error("Error al cargar los albaranes:", error));
 
     // Escuchar el evento `albaranModificado` desde el servidor
     socket.on("albaranModificado", (data) => {
@@ -66,9 +67,10 @@ function Home() {
         .then((data) => {
           setAlbaran(data);
           socket.emit("nuevoAlbaran", data);
+          toast.success("Albarán añadido correctamente");
         })
         .catch((error) =>
-          console.error("Error al cargar los albaranes:", error)
+          toast.error("Error al cargar los albaranes:", error)
         );
     }
   };
