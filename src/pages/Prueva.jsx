@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import "./Prueva.css";
 const API = import.meta.env.VITE_API || "localhost";
-const socket = io(`http://${API}:3001`);
+const socket = io(`${API}`);
 
 function Prueva() {
   const [productos, setProductos] = useState([]);
@@ -11,7 +11,6 @@ function Prueva() {
   useEffect(() => {
     // Escucha actualizaciones desde el servidor
     socket.on("actualizarProductos", (data) => {
-     
       setProductos((prev) => [...prev, data]); // Actualiza la lista de productos
     });
 

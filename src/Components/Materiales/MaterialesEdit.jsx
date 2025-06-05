@@ -35,7 +35,7 @@ function MarterialesEdit({
       if (name) formData[name] = value;
     });
 
-    fetch(`http://${API}:3001/api/${comparador}/edit`, {
+    fetch(`${API}/api/${comparador}/edit`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

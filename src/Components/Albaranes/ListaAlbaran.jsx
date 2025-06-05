@@ -18,7 +18,7 @@ function ListaAlbaran({ albaran }) {
     dialog.showModal();
     /*   const albaranfind = albaran.find((item) => item.id === id); */
 
-    fetch(`http://${API}:3001/api/albaran/${id}`, {
+    fetch(`${API}/api/albaran/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -40,19 +40,12 @@ function ListaAlbaran({ albaran }) {
     dialog.close();
     setAlbaranfind([]);
   }
-  const restaKG = (a, b) => {
-
-    
-    const resultado = a - b;
-    return resultado;
-  
-  }
 
   function saveProceso() {
     const dialog = document.querySelector(".dialog");
     const proceso = document.getElementById("proceso").value;
 
-    fetch(`http://${API}:3001/api/albaranes/edit`, {
+    fetch(`${API}/api/albaranes/edit`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

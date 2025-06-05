@@ -3,11 +3,15 @@ import "./AddPedido.css";
 import ClienteSearch from "../Clientes/ClienteSearch";
 import MaterialesDialog from "./MaterialesDialog";
 import SignaturePad from "./SignaturePad";
+import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 const API = import.meta.env.VITE_API || "localhost";
-function AddPedido({ onAddAlbaran }) {
+function AddPedido({ onAddAlbaran, onClose }) {
   const [clientes, setClientes] = useState([]);
   const [materiales, setMateriales] = useState([]);
   const [firma, setFirma] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   const [pedido, setPedido] = useState({
     numAlbaran: "",
@@ -30,9 +34,17 @@ function AddPedido({ onAddAlbaran }) {
 
   const [clienteActualizado, setClienteActualizado] = useState(0);
   useEffect(() => {
-    fetch(`http://${API}:3001/api/cliente`)
+    fetch(`${API}/api/cliente`)
       .then((res) => res.json())
       .then((cliente) => setClientes(cliente));
+    const dialog = document.getElementById("addPedido");
+    if (dialog && !dialog.open) {
+     dialog.showModal();
+    }
+    numalbaran(); 
+    return () => {
+      if (dialog && dialog.open) dialog.close();
+    };
   }, []);
   const numalbaran = () => {
     const ahora = new Date();
@@ -49,6 +61,8 @@ function AddPedido({ onAddAlbaran }) {
       numAlbaran: `${dia}${mes}${año}${horas}${minutos}${segundos}`,
     }));
   };
+
+
   const handleClienteSeleccionado = (cliente) => {
     setPedido((prevPedido) => ({
       ...prevPedido,
@@ -68,7 +82,7 @@ function AddPedido({ onAddAlbaran }) {
       dir: e.target.dir.value,
     };
 
-    const res = await fetch(`http://${API}:3001/api/cliente/add`, {
+    const res = await fetch(`${API}/api/cliente/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoCliente),
@@ -124,14 +138,15 @@ function AddPedido({ onAddAlbaran }) {
     }));
   };
   const Guardaralbaran = async () => {
-    const res = await fetch(`http://${API}:3001/api/albaran/add`, {
+    const res = await fetch(`${API}/api/albaran/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(pedido),
     });
     const data = await res.json();
+
     if (data.error) {
-      console.error("Error:", data.error);
+      toast.error(data.error);
     }
 
     if (data.message) {
@@ -159,31 +174,27 @@ function AddPedido({ onAddAlbaran }) {
         dir: "",
       });
       setClientes([]);
-      fetch(`http://{API}:3001/api/cliente`)
+      fetch(`{API}/api/cliente`)
         .then((res) => res.json())
         .then((cliente) => setClientes(cliente));
-      fetch(`http://{API}:3001/api/materiales/productos`)
+      fetch(`{API}/api/materiales/productos`)
         .then((res) => res.json())
         .then((data) => setMateriales(data));
     }
   };
   return (
     <section>
-      <button
-        onClick={() => {
-          document.getElementById("addPedido").showModal();
-          numalbaran();
-        }}
-      >
-        AddPedido
-      </button>
       <dialog id="addPedido">
-        <button
-          className="dialog-close"
-          onClick={() => document.getElementById("addPedido").close()}
-        >
-          ✖
-        </button>
+    <button
+      className="dialog-close"
+      onClick={() => {
+        const dialog = document.getElementById("addPedido");
+        if (dialog) dialog.close();
+        onClose && onClose();
+      }}
+    >
+      ✖
+    </button>
         <button onClick={Guardaralbaran}>Guardar</button>
         <form id="datosCliente" className="formCliente">
           <div className="DatosClientes">
@@ -240,7 +251,6 @@ function AddPedido({ onAddAlbaran }) {
             <p>Ral</p>
           </li>
           {pedido.albaran.map((material, index) => (
-         
             <li key={index} className="AlbaranMaterialitem">
               <p>{material.ref}</p> <p>{material.mat} </p>
               <p>

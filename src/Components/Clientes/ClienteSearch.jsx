@@ -5,6 +5,7 @@ function ClienteSearch({
   onClienteSeleccionado,
   onAddCliente,
   clienteSeleccionado,
+  cliente, // Agregado para recibir el cliente desde el padre
 }) {
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -18,6 +19,13 @@ function ClienteSearch({
     }
   }, [clienteSeleccionado]);
 
+  // Sincroniza el estado del input con el cliente recibido como prop
+  useEffect(() => {
+    if (typeof cliente === "string") {
+      setSearchValue(cliente);
+    }
+  }, [cliente]);
+
   const handleClienteInput = (e) => {
     const value = e.target.value;
     setSearchValue(value); // Actualiza el estado del input
@@ -25,7 +33,7 @@ function ClienteSearch({
       const filtered = clientes.filter((cliente) =>
         cliente.nombre.toLowerCase().includes(value.toLowerCase())
       );
-     
+
       setFilteredClientes(filtered);
       setShowTooltip(true);
       setSelectedIndex(-1);

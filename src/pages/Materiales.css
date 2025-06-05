@@ -35,8 +35,9 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #ccc;
   font-size: 14px;
-  line-height: 1.5;
-  overflow: hidden;
+  line-height: 1.5;  
+  overflow-y: auto;
+  overflow-x: hidden; 
 }
 .materialeslist {
   display: grid;
@@ -120,4 +121,12 @@
   color: red;
   font-size: 14px;
   margin-top: 10px;
+}
+.buttons_top{
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  align-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }

@@ -108,8 +108,9 @@
 .pintura > .alingl {
   flex: 1; /* Ocupa todo el espacio disponible */
   text-align: left; /* Alinea el contenido a la izquierda */
-  padding: 0 10px; /* Opcional: añade algo de espacio interno */
+
   list-style: none;
+  min-width: 48px;
 }
 .dialog {
   padding: 20px;

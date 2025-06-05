@@ -19,3 +19,18 @@ li{
 li:hover{
   color: #646cff;
 }
+.bglogo{
+  background-image: url(Logo.png);
+  background-size: cover;
+  width: 40px;
+  height: 40px;
+  margin-left: 1em;
+  border-radius: 40%;
+  cursor: pointer;
+  transition: transform 0.6s ease;
+  color: #294763;
+}
+.bglogo:hover{
+  transform: rotate(360deg);
+  background-color: #f0f0f0;
+}

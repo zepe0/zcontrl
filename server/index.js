@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config({ path: "../../.env" });
+
+
 import { createServer } from "http";
 import { Server } from "socket.io";
 
@@ -21,7 +23,7 @@ import editPintura from "./query/Pintura/editPintura.js";
 import editMaterial from "./query/Material/editMaterial.js";
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const API = process.env.API || "localhost";
 
 // Middleware para habilitar CORS (necesario para conectar con React en desarrollo)
@@ -40,7 +42,7 @@ const io = new Server(httpServer, {
 // Usar las rutas de productos
 app.use("/api/productos", productosRouter);
 app.use("/api/albaranes", getAlbaranes);
-app.use("/api/albaran", newAlbaran);
+app.use("/api/albaran", newAlbaran(io));
 app.use("/api/albaran", getAlbaran);
 app.use("/api/albaranes", editAlbaran(io));
 
@@ -59,16 +61,14 @@ app.use("/api/pintura/edit", editPintura);
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
-  // Escuchar el evento "nuevoAlbaran" desde el cliente
+  
   socket.on("nuevoAlbaran", (data) => {
-    console.log("Nuevo albarán recibido:", data);
-
-    // Emitir el evento a todos los clientes conectados
+  
     io.emit("actualizarAlbaranes", data);
   });
-  // Escuchar un evento desde el cliente
+
   socket.on("modificarProducto", (data) => {
-    // Notificar a todos los clientes conectados sobre el cambio
+ 
     io.emit("actualizarProductos", data);
   });
 
@@ -80,5 +80,5 @@ io.on("connection", (socket) => {
 
 // Inicia el servidor HTTP
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor ejecutándose en http://${API}:${PORT}`);
+  console.log(`Servidor ejecutándose en ${API}:${PORT}`);
 });

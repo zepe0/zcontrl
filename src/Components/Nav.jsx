@@ -3,10 +3,10 @@ import "./Nav.css";
 function Nav() {
   return (
     <nav className="nav">
-      <h1 className=""><Link to="/">LOGO</Link></h1>
+      <p className="bglogo"><Link to="/"></Link></p>
       <ul className="itemsnav">
         <li>
-          <input type="text" placeholder="Search" />
+          
         </li>
       </ul>
       <ul className="itemsnav">

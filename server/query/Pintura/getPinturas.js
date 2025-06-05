@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Endpoint para obtener los pinturas
 router.get("", async (req, res) => {
-  const query = "SELECT * FROM pintura";
+  const query = "SELECT * FROM pintura  order by stock asc";
   try {
     const [resultado] = await conexion.query(query);
     if (resultado.length > 0) {

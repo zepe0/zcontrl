@@ -9,9 +9,11 @@ function Marteriales() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   const getMaterial = () => {
-    fetch(`http://${API}:3001/api/materiales/productos`)
+    fetch(`${API}/api/materiales/productos`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
@@ -42,7 +44,7 @@ function Marteriales() {
     const obra = document.getElementById("Obra").value;
     const consumo = document.getElementById("consumo").value;
 
-    fetch(`http://192.168.1.36:3001/api/materiales/add`, {
+    fetch(`http://192.168.1.36/api/materiales/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,6 +70,22 @@ function Marteriales() {
     setEstado(true);
   };
 
+   const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearch(query);
+    if (query === "") {
+      setFilteredProducts([]);
+    } else {
+  
+      const filtered = productos.filter(
+        (producto) =>
+          producto.nombre.toLowerCase().includes(query) ||
+          producto.refObra.toLowerCase().includes(query)
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
   return (
     <section className="materiales">
       <Nav className="nav"></Nav>
@@ -88,18 +106,23 @@ function Marteriales() {
         </ul>
       </div>
       <div className="cont">
-        <button className="add" onClick={() => addMaterial()}>
-          Añadir
-        </button>
+        <div className="buttons_top">
+          <button className="add" onClick={() => addMaterial()}>
+            Añadir
+          </button>
+          <input
+            type="text" placeholder="🔍 Buscar" onChange={handleSearch}></input>
+        </div>
         <li className="cabezera ">
           <p className="materialesitem nombre-cabezera margin-left">Nombre</p>
           <p className="materialesitem nombre-cabezera">Uni</p>
           <p className="materialesitem nombre-cabezera">Ref-Obra</p>
           <p className="materialesitem nombre-cabezera ">Precio</p>
         </li>
-        {productos.length > 0 ? (
+        {search.length > 0 ? (
+               filteredProducts.length > 0 ? (
           <ul className="productos">
-            {productos.map((material) => (
+            {filteredProducts.map((material) => (
               <li
                 key={material.id}
                 className="materialeslist"
@@ -116,6 +139,24 @@ function Marteriales() {
           </ul>
         ) : (
           <p>Cargando...</p>
+        )
+        ) : (
+          <ul className="productos">
+            {productos.map((material) => (
+              <li
+                key={material.id}
+                className="materialeslist"
+                onClick={() => editMaterial(material.id)}
+              >
+                <p className="materialesitem">{material.nombre}</p>
+                <p className="materialesitem">{material.uni}</p>
+                <p className="materialesitem">{material.refObra}</p>
+                <p className="materialesitem">
+                  {material.precio ? material.precio : "-"} €
+                </p>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
       <dialog className="addmaterial">

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./MaterialesDialog.css";
+import { toast, ToastContainer } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 
 function MaterialesDialog({ onAddMaterial }) {
@@ -9,15 +10,16 @@ function MaterialesDialog({ onAddMaterial }) {
     unid: "",
     refObra: "",
     ral: "",
+    consumo: "",
   });
   const [productos, setProductos] = useState([]);
-  const [filteredProductos, setFilteredProductos] = useState([]); // Coincidencias filtradas
-  const [showTooltip, setShowTooltip] = useState(false); // Tooltip desplegable
+  const [filteredProductos, setFilteredProductos] = useState([]);
+  const [showTooltip, setShowTooltip] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    fetch(`http://${API}:3001/api/materiales/productos`)
+    fetch(`${API}/api/materiales/productos`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
@@ -54,8 +56,9 @@ function MaterialesDialog({ onAddMaterial }) {
         const productoSeleccionado = filteredProductos[selectedIndex];
         setMaterial((prev) => ({
           ...prev,
-          ref: productoSeleccionado.ref,
+          ref: productoSeleccionado.id, // <-- igual que en el click
           mat: productoSeleccionado.nombre,
+          consumo: productoSeleccionado.consumo || 0, // Asigna el consumo si existe
         }));
         setShowTooltip(false);
       }
@@ -68,7 +71,16 @@ function MaterialesDialog({ onAddMaterial }) {
     if (material.ref && material.mat && material.unid && material.refObra) {
       onAddMaterial(material); // Agrega el material al pedido
 
-      setMaterial({ ref: "", mat: "", unid: "", refObra: "", Ral: "" });
+      setMaterial({
+        ref: "",
+        mat: "",
+        unid: "",
+        refObra: "",
+        Ral: "",
+        consumo: "",
+      }); // Reinicia el formulario
+    } else {
+      toast.error("Por favor, completa todos los campos obligatorios.");
     }
   };
 
@@ -138,10 +150,19 @@ function MaterialesDialog({ onAddMaterial }) {
           onChange={handleInputChange}
           autoComplete="off"
         />
+        <input
+          type="text"
+          name="consumo"
+          placeholder="consumo"
+          value={material.consumo}
+          onChange={handleInputChange}
+          autoComplete="off"
+        />
         <button type="submit" onClick={handleAddMaterial}>
           Añadir Material
         </button>
       </form>
+      <ToastContainer position="top-right" />
     </dialog>
   );
 }

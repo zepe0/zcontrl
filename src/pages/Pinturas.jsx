@@ -10,17 +10,32 @@ function Pinturas() {
   const [productos, setProductos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [inputs, setInputs] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const getPinturas = () => {
-      fetch(`http://${API}:3001/`)
-        .then((res) => res.json())
-        .then((data) => {
-          setProductos(data);
-       
-        });
-    };
-    const notifipintura = () => {
-      toast.success("Pintura editada correctamente");
+    fetch(`${API}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProductos(data);
+      });
+  };
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearch(query);
+    if (query === "") {
+      setFilteredProducts([]);
+    } else {
+      const filtered = productos.filter(
+        (producto) =>
+          producto.ral.toLowerCase().includes(query) ||
+          producto.marca.toLowerCase().includes(query)
+      );
+      setFilteredProducts(filtered);
     }
+  };
+  const notifipintura = () => {
+    toast.success("Pintura editada correctamente");
+  };
   useEffect(() => {
     getPinturas();
   }, []);
@@ -42,7 +57,7 @@ function Pinturas() {
     const obra = document.getElementById("Obra").value;
     const consumo = document.getElementById("consumo").value;
 
-    fetch(`http://192.168.1.36:3001/api/materiales/add`, {
+    fetch(`http://192.168.1.36/api/materiales/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -62,8 +77,8 @@ function Pinturas() {
       })
       .catch((error) => console.error("Error:", error));
   };
-  
-  const editpintura= (id) => {
+
+  const editpintura = (id) => {
     const material = productos.find((material) => material.id === id);
     setInputs(material);
     setEstado(true);
@@ -89,17 +104,39 @@ function Pinturas() {
         </ul>
       </div>
       <div className="cont">
-    
-        <button className="add" onClick={() => addMaterial()}>
-          Añadir
-        </button>
-        <li className="cabezeraPintura ">
-          <p className="materialesitem nombre-cabezera margin-left">Ref</p>
-          <p className="materialesitem nombre-cabezera margin-left">RAL</p>
-          <p className="materialesitem nombre-cabezera">Marca</p>
-          <p className="materialesitem nombre-cabezera nombre-cabezera-right">Stock</p>
-        </li>
-        {productos.length > 0 ? (
+        <div className="buttons_top">
+          <button className="add" onClick={() => addMaterial()}>
+            Añadir
+          </button>
+          <input type="text" placeholder="Buscar" onChange={handleSearch} />
+        </div>
+
+        {search.length > 0 ? (
+          filteredProducts.length > 0 ? (
+            <ul className="productos">
+              {filteredProducts.map((pintura) => (
+                <li
+                  key={pintura.id}
+                  className="pinturalist"
+                  onClick={() => editpintura(pintura.id)}
+                >
+                  <p className={`${pintura.ral.replace(/\s+/g, "-")} `}></p>
+                  <p className="materialesitem ">{pintura.ral}</p>
+                  <p className="materialesitem ">{pintura.marca}</p>
+                  <p
+                    className={`${
+                      pintura.stock < 10 ? "warning" : ""
+                    } materialesitem nombre-cabezera-right`}
+                  >
+                    {pintura.stock}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sin resultados</p>
+          )
+        ) : productos.length > 0 ? (
           <ul className="productos">
             {productos.map((pintura) => (
               <li
@@ -107,12 +144,16 @@ function Pinturas() {
                 className="pinturalist"
                 onClick={() => editpintura(pintura.id)}
               >
-                <p
-                  className={`${pintura.ral.replace(/\s+/g, "-")} `}
-                ></p>
+                <p className={`${pintura.ral.replace(/\s+/g, "-")} `}></p>
                 <p className="materialesitem ">{pintura.ral}</p>
                 <p className="materialesitem ">{pintura.marca}</p>
-                <p className={`${pintura.stock < 10 ? "warning":""} materialesitem nombre-cabezera-right`}>{pintura.stock}</p>
+                <p
+                  className={`${
+                    pintura.stock < 10 ? "warning" : ""
+                  } materialesitem nombre-cabezera-right`}
+                >
+                  {pintura.stock}
+                </p>
               </li>
             ))}
           </ul>
