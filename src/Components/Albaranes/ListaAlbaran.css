@@ -108,7 +108,7 @@
 .pintura > .alingl {
   flex: 1; /* Ocupa todo el espacio disponible */
   text-align: left; /* Alinea el contenido a la izquierda */
-
+  text-wrap: nowrap;
   list-style: none;
   min-width: 48px;
 }
@@ -146,6 +146,14 @@
   width: 98%;
   gap: 10px;
 }
+.dialog-productos-lista-valorado {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-items: center;
+  align-items: center;
+  width: 98%;
+  gap: 10px;
+}
 .encabezado {
   background-color: #f9f9f9;
   font-weight: bold;
@@ -155,24 +163,127 @@
   overflow: hidden;
   margin-bottom: 10px;
 }
+.cajatotal {
+  display: flex;
+  gap: 8px;
+  background-color: #f9f9f9;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border: #121312 1px solid;
+  overflow: hidden;
+  margin-bottom: 10px;
+  min-width: 10%;
+ 
+  justify-content: space-between;
+}
+.total {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: flex-end;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+  width: 100%;
+  padding: 10px;  
+  margin-top: auto;
 
+}
 .observaciones {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  width: 50%;
+  width: 99%;
   border: #202324 1px solid;
   border-radius: 15px;
   padding: 10px;
   height: 40px;
-  margin-bottom: 10px;
+  margin-bottom: auto;
+  margin-top: 10px;
+}
+.observaciones-block {
+  margin-top: auto;
+  width: 100%;
 }
 .observacionesTitulo {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
   font-weight: bold;
   margin-bottom: 10px;
+  margin-top: 10px;
+  font-size: 18px;
+  color: #202324;
+  text-align: center;
+}
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  width: 100%;
+  margin: auto;
+  justify-content: flex-start;
+}
+
+.dialog-productos {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-bottom: #121312 1px solid;
+  border-top: #121312 1px solid;
+  border-radius: 15px;
+  padding: 10px;
+  margin-top: 10px;
+}
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  margin-bottom: 1rem;
+}
+.cerrar-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin: 0.5rem 0.5rem 0 0;
+}
+.titulo-datosalbaran {
+  font-size: 26px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  text-align: center;
+  color: #202324;
+}
+@media print {
+  .dialog-buttons,
+  .cerrar-btn,
+  .print-btn,
+  .selectProceso {
+    display: none !important;
+  }
+  .encabezado {
+    width: 97%;
+    margin: auto;
+    background-color: #8f8686;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    border: #121312 1px solid;
+    overflow: hidden;
+    margin-bottom: 10px;
+    -webkit-print-color-adjust: exact; /* Asegura que los colores se impriman correctamente */
+    color-adjust: exact; /* Asegura que los colores se impriman correctamente */
+  }
+  .dialog-cliente {
+    margin-top: 40px;
+  }
+  .observaciones {
+    margin-bottom: 20px;
+    width: 98%;
+  }
+  .dialog-content {
+    width: 95%;
+  }
 }

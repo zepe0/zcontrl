@@ -1,9 +1,11 @@
 import { useState } from "react";
 import "./ListaAlbaran.css";
 import { toast } from "react-toastify";
+import Loader from "../Loader/"; // Asegúrate de que la ruta sea correcta
 const API = import.meta.env.VITE_API || "localhost";
 function ListaAlbaran({ albaran }) {
   const [albaranfind, setAlbaranfind] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const formatearFecha = (fecha) => {
     const date = new Date(fecha);
@@ -12,27 +14,46 @@ function ListaAlbaran({ albaran }) {
     const año = date.getFullYear();
     return `${dia}/${mes}/${año}`;
   };
-
+  function esAlbaranValorado() {
+    return window.location.href.includes("Albaranes");
+  }
   function viewAlbaran(id) {
+    setLoading(true);
     const dialog = document.querySelector(".dialog");
     dialog.showModal();
-    /*   const albaranfind = albaran.find((item) => item.id === id); */
 
-    fetch(`${API}/api/albaran/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    let url = "";
+    let options = {};
+
+    if (esAlbaranValorado) {
+      url = `${API}/api/albaranvalor`;
+      options = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      };
+    } else {
+      url = `${API}/api/albaran/${id}`;
+      options = {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      };
+    }
+
+    fetch(url, options)
       .then((res) => res.json())
       .then((data) => {
+        setLoading(false);
         if (data.error) {
           toast.error("Error:", data.error);
           return;
         }
         setAlbaranfind(data);
       })
-      .catch((error) => toast.error("Error:", error));
+      .catch((error) => {
+        setLoading(false);
+        toast.error("Error:", error);
+      });
   }
 
   function closedialog() {
@@ -70,75 +91,160 @@ function ListaAlbaran({ albaran }) {
     <div className="listaprocesos">
       <dialog className="dialog">
         <div className="dialog-content">
-          <button onClick={closedialog}>X</button>
-
-          {albaranfind.cliente && (
-            <section className="dialog-cliente">
-              <select name="proceso" id="proceso" className="selectProceso">
-                <option value={albaranfind.cliente.proceso}>
-                  {albaranfind.cliente.proceso}
-                </option>
-                {[
-                  "En proceso",
-                  "Completado",
-                  "Pendiente",
-                  "Cancelado",
-                  "En Limpieza",
-                  "En Pintura",
-                  "En Almacen",
-                  "Entregado",
-                ]
-                  .filter((opcion) => opcion !== albaranfind.proceso)
-                  .map((opcion) => (
-                    <option key={opcion} value={opcion}>
-                      {opcion}
-                    </option>
-                  ))}
-              </select>
-              <div className="dialog-cliente">
-                <p>{albaranfind.productos[0].idALbaran} </p>
-                <p>{albaranfind.cliente.nombre}</p>
-                <p>{albaranfind.cliente.Nif}</p>
-                <p>{albaranfind.cliente.dir}</p>
-                <p>{albaranfind.cliente.tel}</p>
+          {loading ? (
+            <Loader />
+          ) : (
+            <>
+              <div className="dialog-buttons">
+                <button onClick={closedialog} className="cerrar-btn">
+                  X
+                </button>
+               {!esAlbaranValorado() && (<button onClick={saveProceso}>Guardar</button>)} 
+                <button className="print-btn" onClick={() => window.print()}>
+                  Imprimir
+                </button>
               </div>
-            </section>
-          )}
-          <div className="dialog-productos">
-            <h3>Datos Albaran</h3>
+              {albaranfind.cliente && (
+                <section className="dialog-cliente">
+                  {!esAlbaranValorado() && (
+                    <select name="proceso" id="proceso" className="selectProceso">
+                      <option value={albaranfind.cliente.proceso}>
+                        {albaranfind.cliente.proceso}
+                      </option>
+                      {[
+                        "En proceso",
+                        "Completado",
+                        "Pendiente",
+                        "Cancelado",
+                        "En Limpieza",
+                        "En Pintura",
+                        "En Almacen",
+                        "Entregado",
+                      ]
+                        .filter((opcion) => opcion !== albaranfind.proceso)
+                        .map((opcion) => (
+                          <option key={opcion} value={opcion}>
+                            {opcion}
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                  <div className="dialog-cliente">
+                    <p>{albaranfind.productos[0].idALbaran} </p>
+                    <p>{albaranfind.cliente.nombre}</p>
+                    <p>{albaranfind.cliente.Nif}</p>
+                    <p>{albaranfind.cliente.dir}</p>
+                    <p>{albaranfind.cliente.tel}</p>
+                  </div>
+                </section>
+              )}
+              <div className="dialog-productos">
+                <h3 className="titulo-datosalbaran">Datos Albaran</h3>
 
-            <ul>
-              <li className="dialog-productos-lista ">
-                <p>Nombre</p>
-                <p>Unidades</p>
-                <p>Ref Obra</p>
-                <p>Ral</p>
-              </li>
-
-              {albaranfind.productos &&
-                albaranfind.productos.map((producto) => (
+                <ul className="producto">
                   <li
-                    key={producto.idMaterial}
-                    className="dialog-productos-lista"
+                    className={
+                      esAlbaranValorado
+                        ? "dialog-productos-lista-valorado  encabezado"
+                        : "dialog-productos-lista  encabezado"
+                    }
                   >
-                    <p className="Nombre">{producto.nombreMaterial}</p>
-                    <p className="">{producto.cantidad} </p>
-
-                    <p className="refOb">{producto.refObra}</p>
-                    <p className="ral">{producto.ral}</p>
+                    <p>Nombre</p>
+                    <p>Unidades</p>
+                    <p>Ref Obra</p>
+                    <p>Ral</p>
+                    {esAlbaranValorado && <p>Precio</p>}
                   </li>
-                ))}
-            </ul>
-            <hr></hr>
-            <h3 className="observacionesTitulo">Observaciones</h3>
-            {albaranfind.productos ? (
-              <p className="observaciones">
-                {albaranfind.productos[0].observaciones}{" "}
-              </p>
-            ) : null}
-          </div>
-          <p></p>
-          <button onClick={saveProceso}>Guardar</button>
+                  {albaranfind.productos &&
+                    albaranfind.productos.map((producto) => (
+                      <li
+                        key={producto.idMaterial}
+                        className={
+                          esAlbaranValorado
+                            ? "dialog-productos-lista-valorado "
+                            : "dialog-productos-lista  "
+                        }
+                      >
+                        <p className="Nombre">{producto.nombreMaterial}</p>
+                        <p className="">{producto.cantidad} </p>
+
+                        <p className="refOb">{producto.refObra}</p>
+                        <p className="ral">{producto.ral}</p>
+                        {producto.precio && (
+                          <p className="precio"> {producto.precio} €</p>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+                <hr></hr>
+                {esAlbaranValorado && albaranfind.productos && (
+                  <ul className="total">
+                    <li className="cajatotal">
+                      <p>Subtotal</p>
+                      <p>
+                        {(() => {
+                          // Calcula el subtotal
+                          const subtotal = albaranfind.productos.reduce(
+                            (total, producto) =>
+                              total +
+                              (parseFloat(producto.precio) || 0) *
+                                (producto.cantidad || 0),
+                            0
+                          );
+                          return subtotal.toFixed(2);
+                        })()}{" "}
+                        €
+                      </p>
+                    </li>
+                    <li className="cajatotal">
+                      <p>IVA (21%)</p>
+                      <p>
+                        {(() => {
+                          // Calcula el subtotal y el IVA
+                          const subtotal = albaranfind.productos.reduce(
+                            (total, producto) =>
+                              total +
+                              (parseFloat(producto.precio) || 0) *
+                                (producto.cantidad || 0),
+                            0
+                          );
+                          const iva = subtotal * 0.21;
+                          return iva.toFixed(2);
+                        })()}{" "}
+                        €
+                      </p>
+                    </li>
+                    <li className="cajatotal">
+                      <p>Total</p>
+                      <p>
+                        {(() => {
+                          // Calcula el subtotal y el total con IVA
+                          const subtotal = albaranfind.productos.reduce(
+                            (total, producto) =>
+                              total +
+                              (parseFloat(producto.precio) || 0) *
+                                (producto.cantidad || 0),
+                            0
+                          );
+                          const total = subtotal * 1.21;
+                          return total.toFixed(2);
+                        })()}{" "}
+                        €
+                      </p>
+                    </li>
+                  </ul>
+                )}
+              </div>
+              <div className="observaciones-block">
+                <h3 className="observacionesTitulo">Observaciones</h3>
+                {albaranfind.productos ? (
+                  <p className="observaciones">
+                    {albaranfind.productos[0].observaciones}{" "}
+                  </p>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
       </dialog>
       {albaran.length > 0 ? (

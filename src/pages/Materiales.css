@@ -35,9 +35,9 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #ccc;
   font-size: 14px;
-  line-height: 1.5;  
+  line-height: 1.5;
   overflow-y: auto;
-  overflow-x: hidden; 
+  overflow-x: hidden;
 }
 .materialeslist {
   display: grid;
@@ -122,11 +122,21 @@
   font-size: 14px;
   margin-top: 10px;
 }
-.buttons_top{
+.buttons_top {
   display: flex;
   justify-content: center;
   align-items: baseline;
   align-content: center;
   gap: 10px;
   margin-bottom: 10px;
+}
+.addmaterial {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40vw;
+  padding: 20px;
+  background-color: #4a8fd8bb;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

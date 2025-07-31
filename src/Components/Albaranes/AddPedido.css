@@ -153,3 +153,79 @@ textarea {
   margin-left: 27px;
   margin-top: 10px;
 }
+#nuevoCliente  {
+  border-radius: 20px;
+  height: 40vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 25vw;
+  background-color: #4a8fd8bb ;
+}
+fieldset{  
+  padding: 10px;
+  color: #312b2b; 
+  font-size: 1.5rem;
+  text-shadow: #f0f0f0 0px 0px 5px;
+  display: flex;
+  flex-direction: row;
+  gap:8px;
+  justify-content: center;
+
+}
+.formNuevoCliente, .formaddmaterial{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  margin-top: 25px;
+ 
+}
+
+.formNuevoCliente input, .formaddmaterial input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  background-color: #f9f9f9a9;
+  transition: border-color 0.3s ease;
+
+}
+.formNuevoCliente input:focus , .formaddmaterial input:focus {
+  border-color: #40ca16;
+  outline: none;
+  box-shadow: 0 0 5px rgba(64, 202, 22, 0.5);
+  background-color: #f0f0f0;
+  color: #000;
+  font-weight: bold;
+}
+.btnGuardarCliente, .formaddmaterial button[type="submit"] {
+  background-color: #4ac7d8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 12px;
+  width: 80%;
+  box-sizing: border-box;
+  font-weight: bold;
+  text-align: center;
+
+  height: 40px;
+  box-shadow: 0 2px 4px rgba(241, 240, 240, 0.1);
+}
+.btnGuardarCliente:hover {
+  background-color: #13f30b;
+  transform: scale(1.05);
+}
+.formaddmaterial button[type="submit"]:hover {
+  background-color: #13f30b;
+  transform: scale(1.05);
+}

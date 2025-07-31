@@ -4,6 +4,8 @@ import "./Materiales.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
 import { toast } from "react-toastify";
+import Dashboarditem from "../Components/DashboardItem";
+import Loader from "../Components/Loader"; // Asegúrate de que la ruta sea correcta
 const API = import.meta.env.VITE_API || "localhost";
 function Marteriales() {
   const [productos, setProductos] = useState([]);
@@ -12,12 +14,16 @@ function Marteriales() {
   const [search, setSearch] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
 
+  const [loading, setLoading] = useState(true);
+
   const getMaterial = () => {
     fetch(`${API}/api/materiales/productos`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
-      });
+        setLoading(false); // Cambia a false una vez que los datos se hayan cargado
+      })
+      .catch(() => setLoading(false));
   };
   useEffect(() => {
     getMaterial();
@@ -70,13 +76,12 @@ function Marteriales() {
     setEstado(true);
   };
 
-   const handleSearch = (e) => {
+  const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearch(query);
     if (query === "") {
       setFilteredProducts([]);
     } else {
-  
       const filtered = productos.filter(
         (producto) =>
           producto.nombre.toLowerCase().includes(query) ||
@@ -91,18 +96,7 @@ function Marteriales() {
       <Nav className="nav"></Nav>
       <div className="dashboard">
         <ul className="dashboardlist">
-          <div className="dashboarditem">
-            <Link to="/Pinturas">Pintura</Link>
-            <li>Albaranes</li>
-            <li>
-              <Link to="/Materiales">Material</Link>
-            </li>
-            <li>Pedidos</li>
-          </div>
-          <div className="dashboarditem">
-            <li>Salir</li>
-            <li>Albaranes</li>
-          </div>
+          <Dashboarditem />
         </ul>
       </div>
       <div className="cont">
@@ -111,7 +105,10 @@ function Marteriales() {
             Añadir
           </button>
           <input
-            type="text" placeholder="🔍 Buscar" onChange={handleSearch}></input>
+            type="text"
+            placeholder="🔍 Buscar"
+            onChange={handleSearch}
+          ></input>
         </div>
         <li className="cabezera ">
           <p className="materialesitem nombre-cabezera margin-left">Nombre</p>
@@ -119,27 +116,29 @@ function Marteriales() {
           <p className="materialesitem nombre-cabezera">Ref-Obra</p>
           <p className="materialesitem nombre-cabezera ">Precio</p>
         </li>
-        {search.length > 0 ? (
-               filteredProducts.length > 0 ? (
-          <ul className="productos">
-            {filteredProducts.map((material) => (
-              <li
-                key={material.id}
-                className="materialeslist"
-                onClick={() => editMaterial(material.id)}
-              >
-                <p className="materialesitem">{material.nombre}</p>
-                <p className="materialesitem">{material.uni}</p>
-                <p className="materialesitem">{material.refObra}</p>
-                <p className="materialesitem">
-                  {material.precio ? material.precio : -""} €
-                </p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>Cargando...</p>
-        )
+        {loading ? (
+          <Loader />
+        ) : search.length > 0 ? (
+          filteredProducts.length > 0 ? (
+            <ul className="productos">
+              {filteredProducts.map((material) => (
+                <li
+                  key={material.id}
+                  className="materialeslist"
+                  onClick={() => editMaterial(material.id)}
+                >
+                  <p className="materialesitem">{material.nombre}</p>
+                  <p className="materialesitem">{material.uni}</p>
+                  <p className="materialesitem">{material.refObra}</p>
+                  <p className="materialesitem">
+                    {material.precio ? material.precio : -""} €
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Cargando...</p>
+          )
         ) : (
           <ul className="productos">
             {productos.map((material) => (
@@ -160,21 +159,29 @@ function Marteriales() {
         )}
       </div>
       <dialog className="addmaterial">
-        <h2>Añadir Material</h2>
-        <form>
-          <label htmlFor="nombre">Nombre</label>
-          <input type="text" name="nombre" id="nombre" />
-          <label htmlFor="stock">Stock</label>
-          <input type="number" name="stock" id="stock" />
-          <label htmlFor="precio">Precio</label>
-          <input type="number" name="precio" id="precio" />
-          <label htmlFor="Obra">Obra</label>
-          <input type="text" name="Obra" id="Obra" />
-          <label htmlFor="Obra">consumo</label>
-          <input type="number" name="consumo" id="consumo" />
+        <fieldset>Añadir Material</fieldset>
+        <form className="formaddmaterial">
+          <button className="dialog-close" onClick={() => closeAddMaterial()}>
+            ✖
+          </button>
 
-          <button onClick={() => closeAddMaterial()}>Cancelar</button>
-          <button onClick={(e) => AddNewMaterial(e)}>Añadir</button>
+          <input type="text" name="nombre" id="nombre" placeholder="Nombre" />
+          <input placeholder="Ref-Obra" type="text" name="Obra" id="Obra" />
+
+          <input placeholder="Stock" type="number" name="stock" id="stock" />
+
+          <input placeholder="Precio" type="number" name="precio" id="precio" />
+
+          <input
+            placeholder="Consumo"
+            type="number"
+            name="consumo"
+            id="consumo"
+          />
+
+          <button type="submit" onClick={(e) => AddNewMaterial(e)}>
+            Añadir
+          </button>
         </form>
       </dialog>
       <MarterialesEdit

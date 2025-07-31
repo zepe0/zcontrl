@@ -6,6 +6,9 @@ import Prueva from "./pages/Prueva";
 import Marteriales from "./pages/Materiales";
 import Pinturas from "./pages/Pinturas";
 import { ToastContainer, Zoom } from "react-toastify";
+import Loader from "./Components/Loader";
+import Albaranes from "./pages/Albaranes";
+import Code from "./Components/QRcode/QRcode";
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
         <Route path="/Pinturas" element={<Pinturas />} />
         <Route path="/prueva" element={<Prueva />} />
         <Route path="/Materiales" element={<Marteriales />} />
+        <Route path="/Albaranes" element={<Albaranes />} />
+        <Route path="*" element={<Loader />} />
+        <Route path="/Code" element={<Code />} />
       </Routes>
       <ToastContainer
         position="top-center"

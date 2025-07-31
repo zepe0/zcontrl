@@ -2,43 +2,43 @@ import Nav from "../Components/Nav";
 import "./Home.css";
 import "../ral.css";
 import { useEffect, useState } from "react";
-import LisatPintura from "../Components/Pinturas/ListaPintura";
+
 import ListaAlbaran from "../Components/Albaranes/ListaAlbaran";
-import AddPedido from "../Components/Albaranes/AddPedido";
+
 import io from "socket.io-client";
-import { Link } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import Dashboarditem from "../Components/DashboardItem";
 import Loader from "../Components/Loader"; // Asegúrate de que la ruta sea correcta
 const API = import.meta.env.VITE_API || "localhost";
 const socket = io(`${API}`);
 
-function Home() {
-  const [pinturas, setPinturas] = useState([]);
+function Albaranes() {
+ 
   const [albaran, setAlbaran] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredAlbaranes, setFilteredAlbaranes] = useState([]);
-  const [showAddPedido, setShowAddPedido] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [loadingAlbaran, setLoadingAlbaran] = useState(true);
-  const [loadingPinturas, setLoadingPinturas] = useState(true);
+
 
   useEffect(() => {
     setLoading(true);
-    
+
     Promise.all([
       fetch(`${API}/`).then((res) => res.json()),
       fetch(`${API}/api/albaranes`).then((res) => res.json()),
     ])
       .then(([pinturasData, albaranData]) => {
-        if(pinturasData.error) {
-           setPinturas([]);
+        if (pinturasData.error) {
+          toast.error(pinturasData.error)
         }
-        setPinturas(pinturasData);
+     
         setAlbaran(albaranData);
         setLoading(false);
         setLoadingAlbaran(false);
-        setLoadingPinturas(false);
+      
       })
       .catch((error) => {
         toast.error("Error al cargar los datos:", error);
@@ -47,7 +47,7 @@ function Home() {
 
     // Escuchar el evento `albaranModificado` desde el servidor
     socket.on("albaranModificado", (data) => {
-      console.log("Evento recibido en Home:");
+      console.log("Evento recibido en Albaranes:");
       // Actualizar el estado global `albaran`
       setAlbaran((prevAlbaranes) =>
         prevAlbaranes.map((item) =>
@@ -56,19 +56,6 @@ function Home() {
       );
     });
 
-    socket.on("Actualizar_pintura", (data) => {
-      setPinturas(data);
-    });
-
-    socket.on("pinturaModificada", (data) => {
-      console.log("Evento recibido en Home para pintura:");
-
-      setPinturas((prevPinturas) =>
-        prevPinturas.map((item) =>
-          item.id === data.id ? { ...item, ...data } : item
-        )
-      );
-    });
 
     socket.on("actualizarAlbaranes", (data) => {
       console.log("Actualización de albaranes recibida:");
@@ -82,18 +69,7 @@ function Home() {
       socket.off("actualizarAlbaranes");
     };
   }, []);
-  const handleAddAlbaran = (nuevoAlbaran) => {
-    if (nuevoAlbaran) {
-      fetch(`${API}/api/albaranes`)
-        .then((res) => res.json())
-        .then((data) => {
-          setAlbaran(data);
-          socket.emit("nuevoAlbaran", data);
-          toast.success("Albarán añadido correctamente");
-        })
-        .catch((error) => toast.error("Error al cargar los albaranes:", error));
-    }
-  };
+
   function formateaFecha(fechaISO) {
     const fecha = new Date(fechaISO);
     const dia = String(fecha.getDate()).padStart(2, "0");
@@ -130,17 +106,10 @@ function Home() {
 
       <div className="cuerpo">
         <div className="listaalbaranes">
-          <h2>Pedidos</h2>
-          {showAddPedido && (
-            <AddPedido
-              onAddAlbaran={handleAddAlbaran}
-              onClose={() => setShowAddPedido(false)}
-            />
-          )}
+          <h2>Albaranes</h2>
+     
           <div className="buttons_top">
-            <button onClick={() => setShowAddPedido(!showAddPedido)}>
-              Añadir pedido
-            </button>
+         
             <input
               type="text"
               placeholder="Buscar "
@@ -157,13 +126,10 @@ function Home() {
             />
           )}
         </div>
-        <div className="listapinturas">
-          <h2>Pintura</h2>
-          {loadingPinturas ? <Loader /> : <LisatPintura pinturas={pinturas} />}
-        </div>
+        
       </div>
     </section>
   );
 }
 
-export default Home;
+export default Albaranes;

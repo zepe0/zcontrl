@@ -96,7 +96,7 @@ function ClienteSearch({
               ))}
             </ul>
           ) : (
-            <p>
+            
               <button
                 type="button"
                 className="add-client-button"
@@ -104,7 +104,7 @@ function ClienteSearch({
               >
                 ✙ Nuevo
               </button>
-            </p>
+            
           )}
         </div>
       )}

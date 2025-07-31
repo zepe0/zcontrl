@@ -272,13 +272,35 @@ function AddPedido({ onAddAlbaran, onClose }) {
         </div>
       </dialog>
       <dialog id="nuevoCliente">
-        <form onSubmit={handleNuevoClienteSubmit}>
+        <form onSubmit={handleNuevoClienteSubmit}
+        className="formNuevoCliente">
+         <button
+            className="dialog-close"
+            onClick={() => {
+              const dialog = document.getElementById("nuevoCliente");
+              if (dialog) dialog.close();
+            }}
+            onKeyDownCapture={(e) => {
+           
+              if (e.key === "Escape") {
+                e.preventDefault();
+                const dialog = document.getElementById("nuevoCliente");
+                if (dialog) dialog.close();
+              }
+            }
+            }
+          >
+            ✖
+          </button> 
+         
+          <fieldset> <img src="ClienteDefault.svg" width="24" height="24" viewBox="0 0 24 24"></img>Nuevo Cliente</fieldset>
           <input
             type="text"
             name="nombre"
             placeholder="Nombre"
             value={nuevoCliente.nombre}
             onChange={handleNuevoClienteChange}
+
           />
           <input
             type="text"
@@ -299,7 +321,7 @@ function AddPedido({ onAddAlbaran, onClose }) {
             onChange={handleNuevoClienteChange}
           />
 
-          <button type="submit">Guardar Cliente</button>
+          <button type="submit" className="btnGuardarCliente">Guardar Cliente</button>
         </form>
       </dialog>
       <MaterialesDialog

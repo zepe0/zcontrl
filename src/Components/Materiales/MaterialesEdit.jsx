@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import "./MaterialesEdit.css";
+import { toast } from "react-toastify";
 function MarterialesEdit({
   inputs,
   estado,
@@ -46,8 +47,14 @@ function MarterialesEdit({
     })
       .then((res) => res.json())
       .then((data) => {
+  
         if (data.error) {
-          console.error("Error:", data.error);
+          toast.error(data.error);
+          return;
+        }
+        if (data.sincambios === "") {
+          const dialog = document.querySelector(".editmaterial");
+          dialog.close();
           return;
         }
         if (data.exito) {

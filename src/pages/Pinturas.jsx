@@ -5,6 +5,8 @@ import "../ral.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
 import { toast } from "react-toastify";
+import Dashboarditem from "../Components/DashboardItem";
+import Loader from "../Components/Loader"; // Asegúrate de que la ruta sea correcta
 const API = import.meta.env.VITE_API || "localhost";
 function Pinturas() {
   const [productos, setProductos] = useState([]);
@@ -12,11 +14,18 @@ function Pinturas() {
   const [inputs, setInputs] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const getPinturas = () => {
     fetch(`${API}/`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        toast.error("Error al cargar las pinturas");
       });
   };
   const handleSearch = (e) => {
@@ -89,18 +98,7 @@ function Pinturas() {
       <Nav className="nav"></Nav>
       <div className="dashboard">
         <ul className="dashboardlist">
-          <div className="dashboarditem">
-            <li>Pintura</li>
-            <li>Albaranes</li>
-            <li>
-              <Link to="/Materiales">Material</Link>
-            </li>
-            <li>Pedidos</li>
-          </div>
-          <div className="dashboarditem">
-            <li>Salir</li>
-            <li>Albaranes</li>
-          </div>
+          <Dashboarditem />
         </ul>
       </div>
       <div className="cont">
@@ -111,7 +109,9 @@ function Pinturas() {
           <input type="text" placeholder="Buscar" onChange={handleSearch} />
         </div>
 
-        {search.length > 0 ? (
+        {loading ? (
+          <Loader />
+        ) : search.length > 0 ? (
           filteredProducts.length > 0 ? (
             <ul className="productos">
               {filteredProducts.map((pintura) => (

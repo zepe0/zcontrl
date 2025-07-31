@@ -3,7 +3,7 @@ import "./Nav.css";
 function Nav() {
   return (
     <nav className="nav">
-      <p className="bglogo"><Link to="/"></Link></p>
+      <Link to="/"><p className="bglogo"></p></Link>
       <ul className="itemsnav">
         <li>
           
@@ -11,7 +11,7 @@ function Nav() {
       </ul>
       <ul className="itemsnav">
         
-        <li>About</li>
+        <li className="itemnav">About</li>
         <li>Contact</li>
       </ul>
     </nav>

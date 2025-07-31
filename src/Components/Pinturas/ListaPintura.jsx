@@ -2,7 +2,7 @@
 function LisatPintura({ pinturas }) {
   return (
     <div className="left">
-      {pinturas ? (
+      {pinturas.length > 0 ? (
         pinturas.map((pintura) => (
           <ul className="pintura" key={pintura.id}>
             <li className={`RAL-${pintura.ral} circuloRal`}></li>
