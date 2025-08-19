@@ -31,6 +31,7 @@ function MarterialesEdit({
     const formData = {};
     const inputsArray = Array.from(inputs);
     inputsArray.forEach((input) => {
+    
       const name = input.name;
       const value = input.value || input.placeholder;
       if (name) formData[name] = value;
@@ -47,7 +48,6 @@ function MarterialesEdit({
     })
       .then((res) => res.json())
       .then((data) => {
-  
         if (data.error) {
           toast.error(data.error);
           return;

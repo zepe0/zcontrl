@@ -8,7 +8,8 @@ import Pinturas from "./pages/Pinturas";
 import { ToastContainer, Zoom } from "react-toastify";
 import Loader from "./Components/Loader";
 import Albaranes from "./pages/Albaranes";
-import Code from "./Components/QRcode/QRcode";
+import ScannerQR from "./Components/QRcode/Scan";
+import Nave from "./Components/Distibucion/Nave";
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
         <Route path="/Materiales" element={<Marteriales />} />
         <Route path="/Albaranes" element={<Albaranes />} />
         <Route path="*" element={<Loader />} />
-        <Route path="/Code" element={<Code />} />
+        <Route path="/Nave" element={<Nave />} />
+        <Route path="/Code" element={<ScannerQR />} />
       </Routes>
       <ToastContainer
         position="top-center"

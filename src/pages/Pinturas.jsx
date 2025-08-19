@@ -144,9 +144,11 @@ function Pinturas() {
                 className="pinturalist"
                 onClick={() => editpintura(pintura.id)}
               >
-                <p className={`${pintura.ral.replace(/\s+/g, "-")} `}></p>
                 <p className="materialesitem ">{pintura.ral}</p>
                 <p className="materialesitem ">{pintura.marca}</p>
+                <p className="materialesitem ">
+                  {pintura.RefPintura ? pintura.RefPintura : "Sin especificar"}
+                </p>
                 <p
                   className={`${
                     pintura.stock < 10 ? "warning" : ""
@@ -172,6 +174,8 @@ function Pinturas() {
           <input type="number" name="precio" id="precio" />
           <label htmlFor="Obra">Obra</label>
           <input type="text" name="Obra" id="Obra" />
+          <label htmlFor="Obra">RefPintura</label>
+          <input type="text" name="refpintura" id="refpintura" />
           <label htmlFor="Obra">consumo</label>
           <input type="number" name="consumo" id="consumo" />
 
