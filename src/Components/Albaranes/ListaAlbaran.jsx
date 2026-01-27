@@ -1,11 +1,16 @@
 import { useState } from "react";
 import "./ListaAlbaran.css";
+
 import { toast } from "react-toastify";
-import Loader from "../Loader/"; // Asegúrate de que la ruta sea correcta
+import Loader from "../Loader/";
+
+
 const API = import.meta.env.VITE_API || "localhost";
 function ListaAlbaran({ albaran }) {
   const [albaranfind, setAlbaranfind] = useState([]);
   const [loading, setLoading] = useState(false);
+
+ 
 
   const formatearFecha = (fecha) => {
     const date = new Date(fecha);
@@ -14,6 +19,38 @@ function ListaAlbaran({ albaran }) {
     const año = date.getFullYear();
     return `${dia}/${mes}/${año}`;
   };
+
+  function printQR(qrValue, nombre) {
+    const qrHtml = `
+    <html>
+      <head>
+        <title>Imprimir QR</title>
+        <style>
+          body { margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+          .nombreQR { margin-top: 16px; font-size: 18pt; font-weight: bold; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div id="qr"></div>
+        <div class="nombreQR">${nombre}</div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script>
+          new QRCode(document.getElementById("qr"), {
+            text: "${qrValue}",
+            width: 300,
+            height: 300
+          });
+          window.onload = () => setTimeout(() => window.print(), 500);
+          window.onafterprint = () => window.close();
+        </script>
+      </body>
+    </html>
+  `;
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(qrHtml);
+    printWindow.document.close();
+  }
+
   function esAlbaranValorado() {
     return window.location.href.includes("Albaranes");
   }
@@ -25,7 +62,7 @@ function ListaAlbaran({ albaran }) {
     let url = "";
     let options = {};
 
-    if (esAlbaranValorado) {
+    if (esAlbaranValorado()) {
       url = `${API}/api/albaranvalor`;
       options = {
         method: "POST",
@@ -96,18 +133,42 @@ function ListaAlbaran({ albaran }) {
           ) : (
             <>
               <div className="dialog-buttons">
-                <button onClick={closedialog} className="cerrar-btn">
+                <button
+                  onClick={() => {
+                    closedialog();
+                    setShowEtiqueta(false);
+                  }}
+                  className="cerrar-btn"
+                >
                   X
                 </button>
-               {!esAlbaranValorado() && (<button onClick={saveProceso}>Guardar</button>)} 
+                {!esAlbaranValorado() && (
+                  <button onClick={saveProceso}>Guardar</button>
+                )}
                 <button className="print-btn" onClick={() => window.print()}>
                   Imprimir
                 </button>
+                <button
+                  className="print-btn"
+                  onClick={() =>
+                    printQR(
+                      albaranfind.productos[0].idALbaran,
+                      albaranfind.cliente.nombre
+                    )
+                  }
+                >
+                  <p className="nombreQR">QR</p>
+                </button>
               </div>
+
               {albaranfind.cliente && (
                 <section className="dialog-cliente">
                   {!esAlbaranValorado() && (
-                    <select name="proceso" id="proceso" className="selectProceso">
+                    <select
+                      name="proceso"
+                      id="proceso"
+                      className="selectProceso"
+                    >
                       <option value={albaranfind.cliente.proceso}>
                         {albaranfind.cliente.proceso}
                       </option>
@@ -144,7 +205,7 @@ function ListaAlbaran({ albaran }) {
                 <ul className="producto">
                   <li
                     className={
-                      esAlbaranValorado
+                      esAlbaranValorado()
                         ? "dialog-productos-lista-valorado  encabezado"
                         : "dialog-productos-lista  encabezado"
                     }
@@ -153,14 +214,14 @@ function ListaAlbaran({ albaran }) {
                     <p>Unidades</p>
                     <p>Ref Obra</p>
                     <p>Ral</p>
-                    {esAlbaranValorado && <p>Precio</p>}
+                    {esAlbaranValorado() && <p>Precio</p>}
                   </li>
                   {albaranfind.productos &&
                     albaranfind.productos.map((producto) => (
                       <li
                         key={producto.idMaterial}
                         className={
-                          esAlbaranValorado
+                          esAlbaranValorado()
                             ? "dialog-productos-lista-valorado "
                             : "dialog-productos-lista  "
                         }
@@ -177,7 +238,7 @@ function ListaAlbaran({ albaran }) {
                     ))}
                 </ul>
                 <hr></hr>
-                {esAlbaranValorado && albaranfind.productos && (
+                {esAlbaranValorado() && albaranfind.productos && (
                   <ul className="total">
                     <li className="cajatotal">
                       <p>Subtotal</p>

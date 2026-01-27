@@ -5,7 +5,9 @@ function Dashboarditem() {
     <>
       <div className="dashboarditem">
         <li>
-          <Link to="/Pinturas" className="item">Pintura</Link>
+          <Link to="/Pinturas" className="item">
+            Pintura
+          </Link>
         </li>
 
         <Link to="/Materiales">
@@ -15,8 +17,11 @@ function Dashboarditem() {
         <Link to="/Albaranes">
           <li>Albaranes</li>
         </Link>
-         <Link to="/Code">
+        <Link to="/Code">
           <li>Code</li>
+        </Link>
+        <Link to="/Nave">
+          <li>Nave</li>
         </Link>
       </div>
       <div className="dashboarditem">

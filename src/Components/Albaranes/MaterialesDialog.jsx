@@ -78,6 +78,7 @@ function MaterialesDialog({ onAddMaterial }) {
         refObra: "",
         Ral: "",
         consumo: "",
+        RefPintura: "",
       }); // Reinicia el formulario
     } else {
       toast.error("Por favor, completa todos los campos obligatorios.");
