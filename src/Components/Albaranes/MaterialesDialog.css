@@ -1,4 +1,3 @@
-
 .tooltip ul {
   list-style: none;
   padding: 0;
@@ -12,16 +11,153 @@
 }
 
 .highlight {
-  background-color: #777474;
+  background-color: #007bff;
   font-weight: bold;
+  color: #ffffff;
 }
-.ListaProductos{
-  position: fixed;
-  margin-top: 1px;
-  background-color: #ffffff;
+.ListaProductos {
+  position: fixed; /* positioned by JS when possible */
+  z-index: 2200; /* high so it covers dialog content */
+  background-color: rgba(255, 255, 255, 0.98);
   border: 1px solid #0e0d0d;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   gap: 2px;
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+  border-radius: 6px;
+  min-width: 180px;
+  max-width: 420px; /* don't grow too wide */
+  max-height: 320px; /* limit height to sensible value */
+  overflow-y: auto; /* allow scrolling only when needed */
+}
+
+.ListaProductos li {
+  padding: 8px 8px;
+  cursor: pointer;
+  color: #000000;
+  background-color: #ffffff;
+  transition: background-color 0.2s ease;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.ListaProductos li:hover {
+  background-color: #f0f0f0;
+  font-weight: 500;
+}
+
+/* make scrollbar thicker/visible for tooltips */
+.ListaProductos::-webkit-scrollbar,
+.ral-tooltip::-webkit-scrollbar {
+  width: 8px;
+}
+.ListaProductos::-webkit-scrollbar-track,
+.ral-tooltip::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+.ListaProductos::-webkit-scrollbar-thumb,
+.ral-tooltip::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.ListaProductos::-webkit-scrollbar-thumb:hover,
+.ral-tooltip::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* tooltip specific to RAL input - reuse same positioning but allow custom item layout */
+.ral-tooltip {
+  position: fixed; /* positioned by JS when possible */
+  z-index: 2200;
+  background-color: rgba(255, 255, 255, 0.98);
+  border: 1px solid #0e0d0d;
+  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+  border-radius: 6px;
+  min-width: 160px;
+  max-width: 360px; /* keep RAL list compact */
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.ral-tooltip li {
+  padding: 10px 8px;
+  cursor: pointer;
+  color: #000000;
+  background-color: #ffffff;
+  transition: background-color 0.2s ease;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.ral-tooltip li:hover {
+  background-color: #f0f0f0;
+}
+
+.input-with-tooltip {
+  position: relative;
+  display: inline-block; /* keep input+tooltip in the text flow */
+  vertical-align: middle;
+}
+
+/* layout form inputs in a single row */
+#materiales form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px; /* Añadido espacio para separar el formulario del botón de cierre */
+}
+
+/* limitar ancho del input de material para evitar desbordes */
+#materiales input[name="mat"] {
+  flex: 0 0 240px;
+  max-width: 240px;
+  min-width: 120px;
+  box-sizing: border-box;
+}
+
+/* remove any default list markers or checkbox-like UI inside tooltip lists */
+.ListaProductos,
+.ral-tooltip {
+  list-style: none;
+}
+.ListaProductos li,
+.ral-tooltip li {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.ListaProductos li::marker,
+.ral-tooltip li::marker {
+  display: none;
+}
+.ListaProductos li input[type="checkbox"],
+.ral-tooltip li input[type="checkbox"] {
+  display: none !important;
+}
+.ListaProductos li:focus,
+.ral-tooltip li:focus {
+  outline: none;
+}
+
+#materiales .dialog-material-close {
+  position: absolute;
+  top: 5px; /* Ajustado para que quede más arriba */
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 1000; /* Asegura que no se superponga a otros elementos */
 }

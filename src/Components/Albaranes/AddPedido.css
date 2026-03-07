@@ -31,15 +31,14 @@
   top: calc(100% + 5px); /* Justo debajo del input */
   left: 0; /* Alineado al borde izquierdo del input */
   background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15); /* Sombra más sutil */
   z-index: 9999; /* Asegura que el tooltip esté encima de otros elementos */
   width: 100%; /* Abarca el ancho del input */
-  max-height: 150px; /* Altura máxima con scroll interno */
+  max-height: 200px; /* Altura máxima con scroll interno */
   overflow-y: auto; /* Scroll si hay muchos elementos */
-  padding: 8px;
-  width: 30vw;
+  min-width: 200px; /* Ancho mínimo para que se vea bien */
 }
 .dialog-close {
   position: absolute;
@@ -59,31 +58,48 @@
   padding: 0;
 }
 
-.tooltip ul li {
+.tooltip-empty {
   padding: 8px;
+}
+
+.tooltip ul li {
+  padding: 10px 8px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
 }
 
 .tooltip ul li:hover {
-  background-color: #f0f0f0;
+  background-color: #f5f5f5;
 }
 
 .add-client-button {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-items: center;
+  justify-content: center;
+  width: 100%;
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 12px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .add-client-button:hover {
   background-color: #0056b3;
+  box-shadow: 0px 2px 6px rgba(0, 86, 179, 0.3);
+  transform: translateY(-1px);
+}
+
+.add-client-button:active {
+  transform: translateY(0);
 }
 .tooltip ul li.highlight {
   background-color: #f0f0f0;
@@ -93,39 +109,40 @@
 .AlbaranMateriales {
   display: flex;
   flex-direction: column;
-  align-items: stretch; 
+  align-items: stretch;
   margin: 10px;
-  width:96%;
-  gap: 5px; 
+  width: 96%;
+  gap: 5px;
 }
 
 .AlbaranMaterialitem {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1fr 1fr; 
+  grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
   align-items: center;
   padding: 10px;
- 
 }
 
 .AlbaranMaterialitem p {
-  margin: 0; 
+  margin: 0;
   text-align: center;
-  overflow: hidden; 
-  text-overflow: ellipsis; 
-  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .AlbaranMaterialitem:first-child {
   font-weight: bold;
-  background-color: #f9f9f9; 
+  background-color: #f9f9f9;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: 100%; 
-  box-sizing: border-box; 
+  width: 100%;
+  box-sizing: border-box;
 }
-small{
-  font-size: 0.7rem; 
-  color: #666; 
+small {
+  font-size: 0.7rem;
+  color: #666;
 }
 canvas {
   border: 1px solid #ccc;
@@ -133,9 +150,9 @@ canvas {
   cursor: crosshair;
 }
 
-.dialog-footer { 
-  overflow-y: auto; 
-  margin-top: auto; 
+.dialog-footer {
+  overflow-y: auto;
+  margin-top: auto;
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -145,7 +162,7 @@ canvas {
 textarea {
   width: 100%;
   height: 80px;
-  resize: none; 
+  resize: none;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
@@ -153,38 +170,42 @@ textarea {
   margin-left: 27px;
   margin-top: 10px;
 }
-#nuevoCliente  {
+#nuevoCliente {
   border-radius: 20px;
   height: 40vh;
-  display: flex;
+  /* don't set display here; <dialog> manages its own visibility via the open attribute */
+  /* display: flex; */
   flex-direction: row;
   justify-content: center;
   align-items: center;
   width: 25vw;
-  background-color: #4a8fd8bb ;
+  background-color: #4a8fd8bb;
 }
-fieldset{  
+#nuevoCliente[open] {
+  display: flex; /* layout contents only when the dialog is open */
+}
+fieldset {
   padding: 10px;
-  color: #312b2b; 
+  color: #312b2b;
   font-size: 1.5rem;
   text-shadow: #f0f0f0 0px 0px 5px;
   display: flex;
   flex-direction: row;
-  gap:8px;
+  gap: 8px;
   justify-content: center;
-
 }
-.formNuevoCliente, .formaddmaterial{
+.formNuevoCliente,
+.formaddmaterial {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   gap: 10px;
   margin-top: 25px;
- 
 }
 
-.formNuevoCliente input, .formaddmaterial input {
+.formNuevoCliente input,
+.formaddmaterial input {
   width: 80%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -193,9 +214,9 @@ fieldset{
   font-size: 1rem;
   background-color: #f9f9f9a9;
   transition: border-color 0.3s ease;
-
 }
-.formNuevoCliente input:focus , .formaddmaterial input:focus {
+.formNuevoCliente input:focus,
+.formaddmaterial input:focus {
   border-color: #40ca16;
   outline: none;
   box-shadow: 0 0 5px rgba(64, 202, 22, 0.5);
@@ -203,7 +224,8 @@ fieldset{
   color: #000;
   font-weight: bold;
 }
-.btnGuardarCliente, .formaddmaterial button[type="submit"] {
+.btnGuardarCliente,
+.formaddmaterial button[type="submit"] {
   background-color: #4ac7d8;
   color: white;
   border: none;
@@ -211,7 +233,9 @@ fieldset{
   cursor: pointer;
   border-radius: 4px;
   font-size: 1rem;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
   margin-top: 12px;
   width: 80%;
   box-sizing: border-box;

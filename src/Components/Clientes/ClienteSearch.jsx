@@ -31,7 +31,7 @@ function ClienteSearch({
     setSearchValue(value); // Actualiza el estado del input
     if (value.length >= 2) {
       const filtered = clientes.filter((cliente) =>
-        cliente.nombre.toLowerCase().includes(value.toLowerCase())
+        cliente.nombre.toLowerCase().includes(value.toLowerCase()),
       );
 
       setFilteredClientes(filtered);
@@ -47,7 +47,7 @@ function ClienteSearch({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prevIndex) =>
-        Math.min(prevIndex + 1, filteredClientes.length - 1)
+        Math.min(prevIndex + 1, filteredClientes.length - 1),
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -96,15 +96,15 @@ function ClienteSearch({
               ))}
             </ul>
           ) : (
-            
+            <div className="tooltip-empty">
               <button
                 type="button"
                 className="add-client-button"
                 onClick={() => onAddCliente(searchValue)}
               >
-                ✙ Nuevo
+                ✙ Nuevo Cliente
               </button>
-            
+            </div>
           )}
         </div>
       )}

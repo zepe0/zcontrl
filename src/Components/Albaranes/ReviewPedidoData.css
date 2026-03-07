@@ -1,0 +1,274 @@
+.review-dialog {
+  padding: 0;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.review-content {
+  padding: 30px;
+  position: relative;
+}
+
+.review-content h2 {
+  color: #000000;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.dialog-close:hover {
+  color: #d32f2f;
+}
+
+.review-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.review-section h3 {
+  color: #000000;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.review-form-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.review-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-field label {
+  color: #000000;
+  font-weight: 500;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.review-field input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #000000;
+  background-color: white;
+  transition: border-color 0.2s;
+}
+
+.review-field input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.materials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.material-item {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  overflow: hidden;
+}
+
+.material-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  min-width: 0;
+}
+
+.material-fields::-webkit-scrollbar {
+  height: 6px;
+}
+
+.material-fields::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.material-fields::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.material-fields::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.btn-delete-material {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  margin-top: 25px;
+}
+
+.btn-delete-material:hover {
+  background-color: #c82333;
+  box-shadow: 0px 2px 6px rgba(200, 35, 51, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-delete-material:active {
+  transform: translateY(0);
+}
+
+.no-data {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #000000;
+  background-color: white;
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.review-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+  box-shadow: 0px 2px 6px rgba(90, 98, 104, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-cancel:active {
+  transform: translateY(0);
+}
+
+.btn-confirm {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm:hover {
+  background-color: #218838;
+  box-shadow: 0px 2px 6px rgba(33, 136, 56, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-confirm:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .review-dialog {
+    width: 95%;
+  }
+
+  .review-content {
+    padding: 20px;
+  }
+
+  .review-form-group {
+    grid-template-columns: 1fr;
+  }
+
+  .material-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .material-item {
+    flex-direction: column;
+  }
+
+  .btn-delete-material {
+    margin-top: 0;
+    width: 100%;
+  }
+}

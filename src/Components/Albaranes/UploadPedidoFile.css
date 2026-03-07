@@ -1,0 +1,74 @@
+.upload-pedido-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-file-input {
+  display: none;
+}
+
+.upload-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+  box-shadow: 0px 2px 6px rgba(0, 86, 179, 0.3);
+  transform: translateY(-1px);
+}
+
+.upload-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.upload-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.dialog-buttons-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.btn-guardar {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-guardar:hover {
+  background-color: #218838;
+  box-shadow: 0px 2px 6px rgba(33, 136, 56, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-guardar:active {
+  transform: translateY(0);
+}

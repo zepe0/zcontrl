@@ -18,6 +18,7 @@
   box-sizing: content-box;
   max-height: 330px;
   box-shadow: 0 4px 20px 0 #202324;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .listaprocesos::-webkit-scrollbar {
@@ -118,6 +119,9 @@
   border-radius: 25px;
   box-shadow: 0 4px 20px 0 #202324;
   width: 90%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #000000;
+  z-index: 10300; /* Reducido para permitir que los toast estén por encima */
 }
 .selectProceso {
   display: flex;
@@ -137,6 +141,11 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.dialog-cliente p {
+  color: #000000;
 }
 .dialog-productos-lista {
   display: grid;
@@ -145,6 +154,22 @@
   align-items: center;
   width: 98%;
   gap: 10px;
+  color: #000000;
+}
+
+.edit-field {
+  width: 90%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-field.small {
+  width: 60px;
+}
+.dialog-productos-lista p {
+  color: #000000;
 }
 .dialog-productos-lista-valorado {
   display: grid;
@@ -153,6 +178,10 @@
   align-items: center;
   width: 98%;
   gap: 10px;
+  color: #000000;
+}
+.dialog-productos-lista-valorado p {
+  color: #000000;
 }
 .encabezado {
   background-color: #f9f9f9;
@@ -162,6 +191,18 @@
   border: #121312 1px solid;
   overflow: hidden;
   margin-bottom: 10px;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: center;
+  gap: 10px;
+}
+.encabezado p {
+  color: #000000 !important;
+  font-weight: bold;
+  margin: 0;
 }
 .cajatotal {
   display: flex;
@@ -174,8 +215,12 @@
   overflow: hidden;
   margin-bottom: 10px;
   min-width: 10%;
- 
   justify-content: space-between;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.cajatotal p {
+  color: #000000;
 }
 .total {
   display: flex;
@@ -186,9 +231,8 @@
   width: 100%;
   align-items: center;
   width: 100%;
-  padding: 10px;  
+  padding: 10px;
   margin-top: auto;
-
 }
 .observaciones {
   display: flex;
@@ -202,6 +246,8 @@
   height: 40px;
   margin-bottom: auto;
   margin-top: 10px;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 .observaciones-block {
   margin-top: auto;
@@ -212,8 +258,9 @@
   margin-bottom: 10px;
   margin-top: 10px;
   font-size: 18px;
-  color: #202324;
+  color: #000000;
   text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 .dialog-content {
   display: flex;
@@ -222,6 +269,8 @@
   width: 100%;
   margin: auto;
   justify-content: flex-start;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #000000;
 }
 
 .dialog-productos {
@@ -243,6 +292,17 @@
   position: relative;
   margin-bottom: 1rem;
 }
+.cancel-btn {
+  background-color: #f44336; /* red */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background-color: #d32f2f;
+}
 .cerrar-btn {
   position: absolute;
   right: 0;
@@ -254,7 +314,8 @@
   margin-bottom: 8px;
   font-weight: bold;
   text-align: center;
-  color: #202324;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 @media print {
   .dialog-buttons,
@@ -262,6 +323,11 @@
   .print-btn,
   .selectProceso {
     display: none !important;
+  }
+  body,
+  * {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+    color: #000000 !important;
   }
   .encabezado {
     width: 97%;
@@ -273,17 +339,50 @@
     border: #121312 1px solid;
     overflow: hidden;
     margin-bottom: 10px;
-    -webkit-print-color-adjust: exact; /* Asegura que los colores se impriman correctamente */
-    color-adjust: exact; /* Asegura que los colores se impriman correctamente */
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    color: #000000 !important;
+  }
+  .encabezado p {
+    color: #000000 !important;
   }
   .dialog-cliente {
     margin-top: 40px;
+    color: #000000 !important;
+  }
+  .dialog-cliente p {
+    color: #000000 !important;
   }
   .observaciones {
     margin-bottom: 20px;
     width: 98%;
+    color: #000000 !important;
   }
   .dialog-content {
     width: 95%;
+    color: #000000 !important;
   }
+  .dialog-productos-lista p,
+  .dialog-productos-lista-valorado p,
+  .cajatotal p {
+    color: #000000 !important;
+  }
+  .titulo-datosalbaran,
+  .observacionesTitulo {
+    color: #000000 !important;
+  }
+}
+
+.Toastify__toast-container {
+  z-index: 10600; /* Ensure toast notifications appear above dialogs */
+}
+
+.Toastify__toast--error {
+  z-index: 10550; /* Ensure error toasts appear above all dialogs */
+}
+
+.Toastify__toast,
+.Toastify__toast-theme--light,
+.Toastify__toast--error {
+  z-index: 10600; /* Ensure all toast types appear above dialogs */
 }
