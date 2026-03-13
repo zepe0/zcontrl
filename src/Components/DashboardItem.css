@@ -1,0 +1,41 @@
+.dashboarditem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.dashboard-links li,
+.dashboard-footer li {
+  list-style: none;
+}
+
+.dashboard-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.62rem 0.72rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #dcf0ff;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dashboard-link:hover {
+  background-color: rgba(188, 222, 245, 0.14);
+  transform: translateX(2px);
+}
+
+.dashboard-link svg {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.dashboard-footer {
+  margin-top: auto;
+}
+
+.muted-link {
+  color: #b7c8d6;
+}

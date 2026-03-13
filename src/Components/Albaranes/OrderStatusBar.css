@@ -1,0 +1,239 @@
+.order-status-wrap {
+  width: min(560px, 100%);
+  margin: 8px 0 14px;
+}
+
+.order-status-inline {
+  width: min(560px, 100%);
+  margin: 0 auto;
+}
+
+.order-status-align-right {
+  margin-left: auto;
+}
+
+.order-status-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.order-status-title {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7788;
+  font-weight: 700;
+}
+
+.order-status-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(62px, 1fr));
+  align-items: flex-start;
+  gap: 4px;
+  padding: 6px 0 0;
+}
+
+.order-status-base-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 25px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d6dce5 0%, #e4e9f0 100%);
+  z-index: 0;
+}
+
+.order-status-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #2e3642;
+  padding: 0;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.order-status-step:hover:not(:disabled) .order-status-dot {
+  transform: scale(1.08);
+}
+
+.order-status-step:disabled {
+  cursor: default;
+}
+
+.order-status-dot {
+  width: 11px;
+  height: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #9ba9bc;
+  background: #e8edf4;
+  transition: all 0.2s ease;
+}
+
+.order-status-dot-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-status-label {
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #7a8697;
+  text-align: center;
+}
+
+.order-status-step.is-completed {
+  color: #2f7c5e;
+}
+
+.order-status-step.is-completed .order-status-dot {
+  border-color: #4a9575;
+  background: #68b192;
+}
+
+.order-status-step.is-current {
+  color: #0d6f85;
+}
+
+.order-status-step.is-current .order-status-dot {
+  border-color: #0d6f85;
+  background: #0d6f85;
+  width: 15px;
+  height: 15px;
+  box-shadow: 0 0 0 4px rgba(13, 111, 133, 0.15);
+}
+
+.order-status-step.is-warning .order-status-dot {
+  border-color: #c46b00;
+  background: #ffb14a;
+}
+
+.order-status-step.is-warning.is-current .order-status-dot {
+  box-shadow: 0 0 0 4px rgba(246, 161, 54, 0.24);
+}
+
+.order-status-step.is-warning .order-status-label {
+  color: #8a4b00;
+}
+
+.order-status-step.is-pending-current .order-status-dot {
+  border-color: #c46b00;
+  background: #ffb14a;
+  width: 15px;
+  height: 15px;
+  box-shadow: 0 0 0 4px rgba(246, 161, 54, 0.24);
+}
+
+.order-status-step.is-pending-current .order-status-label {
+  color: #8a4b00;
+}
+
+.order-status-warning-icon {
+  font-size: 0.56rem;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.order-status-warning-badge {
+  position: absolute;
+  top: -9px;
+  right: -8px;
+  min-width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: #f08c00;
+  border: 1px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(240, 140, 0, 0.45);
+  animation: warningPulse 1.15s ease-in-out infinite;
+}
+
+.order-status-persistent-alert {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #ffd8aa;
+  background: #fff5e8;
+  border-radius: 9px;
+  padding: 5px 8px;
+}
+
+.order-status-persistent-text {
+  font-size: 0.72rem;
+  color: #9a4a00;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.order-status-inventory-btn {
+  border: 1px solid #ffc98e;
+  background: #ffffff;
+  color: #a34e00;
+  border-radius: 8px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.24rem 0.52rem;
+  cursor: pointer;
+}
+
+.order-status-inventory-btn:hover {
+  background: #fff1df;
+}
+
+@keyframes warningPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.72;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.order-status-error {
+  margin: 6px 0 0;
+  color: #b01f2f;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .order-status-wrap {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .order-status-track {
+    grid-template-columns: repeat(6, minmax(48px, 1fr));
+  }
+
+  .order-status-label {
+    font-size: 0.56rem;
+  }
+}

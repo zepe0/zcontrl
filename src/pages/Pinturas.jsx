@@ -1,11 +1,9 @@
-import { Link } from "react-router-dom";
 import Nav from "../Components/Nav";
 import "./Materiales.css";
 import "../ral.css";
 import { useEffect, useState } from "react";
 import MarterialesEdit from "../Components/Materiales/MaterialesEdit";
 import { toast } from "react-toastify";
-import Dashboarditem from "../Components/DashboardItem";
 import Loader from "../Components/Loader"; // Asegúrate de que la ruta sea correcta
 const API = import.meta.env.VITE_API || "localhost";
 function Pinturas() {
@@ -37,7 +35,7 @@ function Pinturas() {
       const filtered = productos.filter(
         (producto) =>
           producto.ral.toLowerCase().includes(query) ||
-          producto.marca.toLowerCase().includes(query)
+          producto.marca.toLowerCase().includes(query),
       );
       setFilteredProducts(filtered);
     }
@@ -96,11 +94,6 @@ function Pinturas() {
   return (
     <section className="materiales">
       <Nav className="nav"></Nav>
-      <div className="dashboard">
-        <ul className="dashboardlist">
-          <Dashboarditem />
-        </ul>
-      </div>
       <div className="cont">
         <div className="buttons_top">
           <button className="add" onClick={() => addMaterial()}>

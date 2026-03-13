@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { FiLoader, FiUploadCloud } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./UploadPedidoFile.css";
@@ -179,8 +180,13 @@ function UploadPedidoFile({ onDataExtracted }) {
           disabled={loading}
           className="upload-btn"
           title="Cargar pedido desde PDF o imagen"
+          aria-label="Cargar pedido desde PDF o imagen"
         >
-          {loading ? "Procesando..." : "📄 Cargar desde archivo"}
+          {loading ? (
+            <FiLoader className="upload-icon-spin" />
+          ) : (
+            <FiUploadCloud />
+          )}
         </button>
       </div>
     </>

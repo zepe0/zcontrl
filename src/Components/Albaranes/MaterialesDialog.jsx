@@ -1,15 +1,25 @@
 import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
 import "./MaterialesDialog.css";
+import "../../ral.css";
 import { toast, ToastContainer } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 
 function MaterialesDialog({ onAddMaterial, onClose }) {
+  const getRalCode = (value) => {
+    const text = String(value || "");
+    const match = text.match(/\d{4}/);
+    if (match) return match[0];
+    return text.trim().split(" ")[0];
+  };
+
   const [material, setMaterial] = useState({
     ref: "",
     mat: "",
     unid: "",
     refObra: "",
     ral: "",
+    Ral: "",
+    precio_unitario: "",
     consumo: "",
   });
   const [productos, setProductos] = useState([]);
@@ -131,7 +141,11 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setMaterial((prev) => ({ ...prev, [name]: value }));
+    setMaterial((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "ral" ? { Ral: value } : {}),
+    }));
     if (name === "mat") {
       // Filtra productos basados en el texto ingresado
       const filtered = productos.filter((producto) =>
@@ -169,6 +183,7 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
           ...prev,
           ref: productoSeleccionado.id, // <-- igual que en el click
           mat: productoSeleccionado.nombre,
+          precio_unitario: productoSeleccionado.precio ?? "",
           consumo: productoSeleccionado.consumo || 0, // Asigna el consumo si existe
         }));
         setShowTooltip(false);
@@ -192,6 +207,7 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
         setMaterial((prev) => ({
           ...prev,
           ral: `${p.ral} ${p.marca || ""}`.trim(),
+          Ral: `${p.ral} ${p.marca || ""}`.trim(),
         }));
         setShowRalTooltip(false);
       }
@@ -202,7 +218,11 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
     e.preventDefault();
 
     if (material.ref && material.mat && material.unid && material.refObra) {
-      onAddMaterial(material); // Agrega el material al pedido
+      const normalizedMaterial = {
+        ...material,
+        Ral: material.Ral || material.ral,
+      };
+      onAddMaterial(normalizedMaterial); // Agrega el material al pedido
 
       setMaterial({
         ref: "",
@@ -210,6 +230,8 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
         unid: "",
         refObra: "",
         ral: "",
+        Ral: "",
+        precio_unitario: "",
         consumo: "",
       }); // Reinicia el formulario
     } else {
@@ -246,6 +268,7 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
                       ...prev,
                       ref: producto.id,
                       mat: producto.nombre,
+                      precio_unitario: producto.precio ?? "",
                     }));
                     setShowTooltip(false);
                   }}
@@ -307,11 +330,17 @@ function MaterialesDialog({ onAddMaterial, onClose }) {
                     setMaterial((prev) => ({
                       ...prev,
                       ral: `${p.ral} ${p.marca || ""}`.trim(),
+                      Ral: `${p.ral} ${p.marca || ""}`.trim(),
                     }));
                     setShowRalTooltip(false);
                   }}
                 >
-                  {`${p.ral} ${p.marca || ""}`.trim()}
+                  <span
+                    className={`ral-option-color RAL-${getRalCode(p.ral)}`}
+                  ></span>
+                  <span className="ral-option-text">
+                    {`${p.ral} ${p.marca || ""}`.trim()}
+                  </span>
                 </li>
               ))}
             </ul>

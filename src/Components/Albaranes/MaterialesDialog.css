@@ -1,15 +1,3 @@
-.tooltip ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.tooltip ul li {
-  padding: 8px;
-  cursor: pointer;
-  z-index: 1000;
-}
-
 .highlight {
   background-color: #007bff;
   font-weight: bold;
@@ -102,6 +90,26 @@
 
 .ral-tooltip li:hover {
   background-color: #f0f0f0;
+}
+
+.ral-option-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(21, 41, 56, 0.28);
+  margin-right: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(10, 35, 54, 0.22);
+}
+
+.ral-option-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ral-tooltip li.highlight .ral-option-color {
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .input-with-tooltip {

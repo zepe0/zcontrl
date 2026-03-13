@@ -9,25 +9,24 @@
 }
 
 .upload-btn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  display: flex;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  background: #ffffff;
+  color: #245273;
+  border: 1px solid #c4d5e3;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
 .upload-btn:hover:not(:disabled) {
-  background-color: #0056b3;
-  box-shadow: 0px 2px 6px rgba(0, 86, 179, 0.3);
+  background: #edf5fb;
+  box-shadow: 0px 2px 6px rgba(36, 82, 115, 0.16);
   transform: translateY(-1px);
 }
 
@@ -36,39 +35,26 @@
 }
 
 .upload-btn:disabled {
-  background-color: #cccccc;
+  background-color: #f3f6f9;
+  color: #8ba3b5;
+  border-color: #d5e0e9;
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.dialog-buttons-container {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
+.upload-btn svg {
+  flex-shrink: 0;
 }
 
-.btn-guardar {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  transition: all 0.3s ease;
+.upload-icon-spin {
+  animation: uploadSpin 0.9s linear infinite;
 }
 
-.btn-guardar:hover {
-  background-color: #218838;
-  box-shadow: 0px 2px 6px rgba(33, 136, 56, 0.3);
-  transform: translateY(-1px);
-}
-
-.btn-guardar:active {
-  transform: translateY(0);
+@keyframes uploadSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

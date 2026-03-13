@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FiPlus } from "react-icons/fi";
 
 function ClienteSearch({
   clientes,
@@ -65,7 +66,7 @@ function ClienteSearch({
   };
 
   return (
-    <div className="input-container">
+    <div className="input-container cliente-search-container">
       <input
         type="text"
         placeholder="Cliente"
@@ -77,35 +78,38 @@ function ClienteSearch({
           if (e.target.value.length >= 2) setShowTooltip(true);
         }}
       />
-      {showTooltip && (
+      {showTooltip && filteredClientes.length > 0 && (
         <div className="tooltip">
-          {filteredClientes.length > 0 ? (
-            <ul>
-              {filteredClientes.map((cliente, index) => (
-                <li
-                  key={cliente.id}
-                  className={index === selectedIndex ? "highlight" : ""}
-                  onClick={() => {
-                    onClienteSeleccionado(cliente);
-                    setSearchValue(cliente.nombre); // Actualiza el input con el nombre del cliente
-                    setShowTooltip(false);
-                  }}
-                >
-                  {cliente.nombre}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="tooltip-empty">
-              <button
-                type="button"
-                className="add-client-button"
-                onClick={() => onAddCliente(searchValue)}
+          <ul>
+            {filteredClientes.map((cliente, index) => (
+              <li
+                key={cliente.id}
+                className={index === selectedIndex ? "highlight" : ""}
+                onClick={() => {
+                  onClienteSeleccionado(cliente);
+                  setSearchValue(cliente.nombre); // Actualiza el input con el nombre del cliente
+                  setShowTooltip(false);
+                }}
               >
-                ✙ Nuevo Cliente
-              </button>
-            </div>
-          )}
+                {cliente.nombre}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {showTooltip && filteredClientes.length === 0 && (
+        <div className="new-client-inline-action">
+          <button
+            type="button"
+            className="add-client-button"
+            title="Nuevo cliente
+            "
+            onClick={() => onAddCliente(searchValue)}
+          >
+            <FiPlus />
+            <span>Nuevo cliente</span>
+          </button>
         </div>
       )}
     </div>
