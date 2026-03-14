@@ -14,6 +14,10 @@ DEFAULT_IVA_RATE = 0.21: El IVA aplicado es del 21%.
 const DEFAULT_ESPESOR_RECARGO_MM = 3;
 const DEFAULT_ESPESOR_RECARGO_FACTOR = 1.1;
 const DEFAULT_IVA_RATE = 0.21;
+const DEFAULT_PAINT_CONSUMPTION_M2_RATIO = 0.24;
+// Desarrollo perimetral medio asumido para líneas ml sin ancho: 1.25 m × 0.24 = 0.30
+const DEFAULT_ML_DEVELOPMENT_M = 1.25;
+const DEFAULT_PAINT_CONSUMPTION_UD_BASE = 0.12;
 
 /**
  * Convierte un valor a numero de forma segura.
@@ -79,7 +83,6 @@ export const getLineBaseAmount = (line) => {
   const legacyBase = parseNumber(line?.unid);
 
   if (unit === "m2") {
-   
     return largoMm && anchoMm ? cantidad * largoM * anchoM : legacyBase;
   }
 
@@ -152,4 +155,70 @@ export const getPedidoTotals = (lines = [], options = {}) => {
   const total = base + iva;
 
   return { base, iva, total };
+};
+
+/**
+ * Calcula el consumo orientativo de pintura (kg) para una linea.
+ *
+ * Logica hibrida (cualquier unidad):
+ * 1. Si hay largo y ancho: superficie real (L * A / 1_000_000) * cantidad * 0.24
+ * 2. Si no hay ancho:
+ *    - ml: longitud * desarrollo_medio_1.25m * cantidad * 0.24
+ *    - ud sin medidas: consumo base 0.12 por unidad
+ *    - m2 sin ancho: 0 (dato insuficiente)
+ *
+ * Nota: getLineBaseAmount sigue usando solo 'cantidad' para ud para no
+ * alterar el precio de venta cuando la unidad es por pieza.
+ *
+ * @param {Object} linea - Linea del albaran.
+ * @returns {number} Consumo calculado en kg.
+ */
+export const calculatePaintConsumption = (linea) => {
+  const unit = normalizeUnit(linea?.unidad_medida);
+  const cantidad = parseNumber(linea?.cantidad ?? linea?.unid);
+  const largoMm = parseNumber(linea?.largo ?? linea?.longitud ?? linea?.alto);
+  const anchoMm = parseNumber(linea?.ancho);
+
+  if (cantidad <= 0) return 0;
+
+  // Caso 1: hay largo Y ancho → superficie real, independiente de la unidad.
+  if (largoMm > 0 && anchoMm > 0) {
+    const areaM2 = (largoMm * anchoMm) / 1000000;
+    return areaM2 * cantidad * DEFAULT_PAINT_CONSUMPTION_M2_RATIO;
+  }
+
+  // Caso 2: solo largo, sin ancho.
+  if (largoMm > 0) {
+    if (unit === "ml") {
+      // Estimación con desarrollo perimetral medio de 1.25 m.
+      return (
+        (largoMm / 1000) *
+        DEFAULT_ML_DEVELOPMENT_M *
+        cantidad *
+        DEFAULT_PAINT_CONSUMPTION_M2_RATIO
+      );
+    }
+    // m2 con solo largo: dato insuficiente.
+    return 0;
+  }
+
+  // Caso 3: ud sin medidas → consumo base por pieza.
+  return cantidad * DEFAULT_PAINT_CONSUMPTION_UD_BASE;
+};
+
+/**
+ * Resuelve el consumo requerido para control de stock.
+ * Prioriza consumo informado en la linea y, si no existe, calcula uno orientativo.
+ *
+ * @param {Object} linea - Linea del albaran.
+ * @returns {number} Consumo requerido en kg.
+ */
+export const resolveLineRequiredStock = (linea) => {
+  const consumoGuardado = parseNumber(linea?.consumo);
+  if (consumoGuardado > 0) return consumoGuardado;
+
+  const consumoCalculado = calculatePaintConsumption(linea);
+  if (consumoCalculado > 0) return consumoCalculado;
+
+  return parseNumber(linea?.cantidad ?? linea?.unid);
 };

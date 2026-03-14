@@ -7,10 +7,12 @@ import ReviewPedidoData from "./ReviewPedidoData";
 import OrderStatusBar from "./OrderStatusBar";
 import { normalizeOrderStatus } from "./logic/orderStatusFlow";
 import {
+  calculatePaintConsumption,
   getLineBaseAmount,
   getLineSubtotal,
   normalizeUnit,
   parseNumber,
+  resolveLineRequiredStock,
 } from "./logic/calculosPedido";
 import {
   crearAlbaran,
@@ -85,20 +87,20 @@ function MedidasInput({
   return (
     <span className="medidas-editor">
       <span className={`dimension-group unit-${unit}`}>
-        {unit !== "ud" && (
-          <input
-            className={`inline-line-input line-edit-field ${largoFieldProps?.isInvalid ? "validation-focus" : ""}`}
-            type="number"
-            min="0"
-            step="0.01"
-            value={largo || ""}
-            onChange={onLargoChange}
-            placeholder="L"
-            aria-invalid={Boolean(largoFieldProps?.isInvalid)}
-            {...(largoFieldProps?.attrs || {})}
-          />
-        )}
-        {unit === "m2" && (
+        {/* Largo: visible siempre (ud, ml, m2) para permitir cálculo híbrido de consumo */}
+        <input
+          className={`inline-line-input line-edit-field ${largoFieldProps?.isInvalid ? "validation-focus" : ""}`}
+          type="number"
+          min="0"
+          step="0.01"
+          value={largo || ""}
+          onChange={onLargoChange}
+          placeholder="L"
+          aria-invalid={Boolean(largoFieldProps?.isInvalid)}
+          {...(largoFieldProps?.attrs || {})}
+        />
+        {/* Ancho: visible para m2 y ud (con ancho activa fórmula de superficie) */}
+        {(unit === "m2" || unit === "ud") && (
           <>
             <span className="measure-multiplier">x</span>
             <input
@@ -114,7 +116,6 @@ function MedidasInput({
             />
           </>
         )}
-        {unit === "ud" && <span className="dimension-placeholder">-</span>}
       </span>
       <label className="espesor-inline">
         <span>x</span>
@@ -612,6 +613,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
         next.precio_unitario =
           selectedMaterial.precio ??
+          selectedMaterial.precioCatalogo ??
           selectedMaterial.precio_unitario ??
           next.precio_unitario ??
           getDefaultUnitPrice(selectedUnit);
@@ -626,11 +628,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           next.largo = next.largo || next.longitud || "1000";
           next.longitud = next.largo;
           next.ancho = next.ancho || "1000";
-        } else {
-          next.largo = "";
-          next.longitud = "";
-          next.ancho = "";
         }
+      } else {
+        const selectedUnit = normalizeUnit(next.unidad_medida || "ud");
+        next.precio_unitario = getDefaultUnitPrice(selectedUnit);
       }
     }
 
@@ -640,12 +641,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       next.precio_unitario = getDefaultUnitPrice(unit);
       next.cantidad = next.cantidad || "1";
 
-      if (unit === "ud") {
-        next.largo = "";
-        next.longitud = "";
-        next.ancho = "";
-      }
-
+      // ud ahora admite dimensiones para cálculo híbrido de consumo: no limpiar.
       if (unit === "ml") {
         next.largo = next.largo || next.longitud || "1000";
         next.longitud = next.largo;
@@ -667,6 +663,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       next.ral = value;
       next.Ral = value;
     }
+
+    // Recalcular unid (base de precio) y consumo en tiempo real tras cualquier cambio.
+    next.unid = getLineBaseAmount(next);
+    next.consumo = calculatePaintConsumption(next);
 
     return next;
   };
@@ -773,6 +773,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     return {
       idMaterial: linea?.idMaterial || linea?.ref,
       cantidad: linea?.cantidad,
+      consumo: resolveLineRequiredStock(linea),
       ral: linea?.ral || linea?.Ral,
       nombreMaterial: linea?.mat || linea?.nombreMaterial,
       refObra: linea?.refObra,
@@ -973,12 +974,6 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     return match ? match[0] : raw;
   };
 
-  const resolveLineRequiredStock = (linea) => {
-    const consumo = parseNumber(linea?.consumo);
-    if (consumo > 0) return consumo;
-    return parseNumber(linea?.cantidad ?? linea?.unid);
-  };
-
   const checkStockAvailability = useCallback(
     (lineas) => {
       const source = Array.isArray(lineas) ? lineas : [];
@@ -987,7 +982,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       source.forEach((linea, index) => {
         if (isLineFabricacionManual(linea)) return;
 
-        const rawRal = String(linea?.Ral || line?.ral || "").trim();
+        const rawRal = String(linea?.Ral || linea?.ral || "").trim();
         if (!rawRal || rawRal === "-") return;
 
         const required = resolveLineRequiredStock(linea);
@@ -1393,6 +1388,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           // Prioriza el precio definido en el artículo; si no existe usa tarifa rápida por unidad.
           next.precio_unitario =
             selectedMaterial.precio ??
+            selectedMaterial.precioCatalogo ??
             selectedMaterial.precio_unitario ??
             getDefaultUnitPrice(selectedUnit);
 
@@ -1409,12 +1405,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
             next.largo = next.largo || next.alto || "1000";
             next.ancho = next.ancho || "1000";
             next.longitud = next.largo;
-          } else {
-            next.largo = "";
-            next.longitud = "";
-            next.ancho = "";
-            next.espesor = "";
           }
+        } else {
+          const selectedUnit = normalizeUnit(next.unidad_medida || "ud");
+          next.precio_unitario = getDefaultUnitPrice(selectedUnit);
         }
       }
 
@@ -1424,13 +1418,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         next.precio_unitario = getDefaultUnitPrice(unit);
         next.cantidad = next.cantidad || "1";
 
-        if (unit === "ud") {
-          next.largo = "";
-          next.longitud = "";
-          next.ancho = "";
-          next.espesor = "";
-        }
-
+        // ud ahora admite dimensiones para cálculo híbrido de consumo: no limpiar.
         if (unit === "ml") {
           next.largo = next.largo || next.longitud || "1000";
           next.longitud = next.largo;
@@ -1461,6 +1449,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           next.Ral = next.ral;
         }
       }
+
+      // Recalcular unid (base de precio) y consumo en tiempo real tras cualquier cambio.
+      next.unid = getLineBaseAmount(next);
+      next.consumo = calculatePaintConsumption(next);
 
       return next;
     });
@@ -1512,6 +1504,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       ...draftMaterial,
       unidad_medida: draftUnit,
       cantidad,
+      consumo: calculatePaintConsumption({
+        ...draftMaterial,
+        unidad_medida: draftUnit,
+        cantidad,
+      }),
       largo: draftMaterial.largo || draftMaterial.longitud || "",
       longitud: draftMaterial.largo || draftMaterial.longitud || "",
       unid: baseAmount,
@@ -1664,12 +1661,12 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     lineas.forEach((linea, index) => {
       const lineNo = index + 1;
       const unit = normalizeUnit(linea?.unidad_medida);
-      const cantidad = parseNumber(linea?.cantidad ?? line?.unid);
-      const largo = parseNumber(linea?.largo ?? line?.longitud ?? line?.alto);
+      const cantidad = parseNumber(linea?.cantidad ?? linea?.unid);
+      const largo = parseNumber(linea?.largo ?? linea?.longitud ?? linea?.alto);
       const ancho = parseNumber(linea?.ancho);
       const espesor = parseNumber(linea?.espesor);
       const precio = parseNumber(linea?.precio_unitario);
-      const ral = String(linea?.Ral || line?.ral || "").trim();
+      const ral = String(linea?.Ral || linea?.ral || "").trim();
 
       if (!String(linea?.mat || linea?.nombreMaterial || "").trim()) {
         issues.push({
@@ -1987,7 +1984,15 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
-    const data = await crearAlbaran(API, pedido);
+    const pedidoConConsumo = {
+      ...pedido,
+      albaran: (pedido?.albaran || []).map((linea) => ({
+        ...linea,
+        consumo: resolveLineRequiredStock(linea),
+      })),
+    };
+
+    const data = await crearAlbaran(API, pedidoConConsumo);
 
     if (data.error) {
       toast.error(data.error);
