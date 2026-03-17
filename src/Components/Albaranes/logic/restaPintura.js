@@ -1,7 +1,34 @@
 import { toast } from "react-toastify";
 const API = import.meta.env.VITE_API || "localhost";
 
+const normalizeToken = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const isWildcardPintura = (value) => {
+  const token = normalizeToken(value);
+  return token === "pendiente" || token === "sistema";
+};
+
 const restaKG = (pinturaResta) => {
+  debugger;
+  if (typeof pinturaResta === "object" && pinturaResta !== null) {
+    const isWildcard = [
+      pinturaResta.id,
+      pinturaResta.idPintura,
+      pinturaResta.nombre,
+      pinturaResta.pintura,
+      pinturaResta.ral,
+    ].some(isWildcardPintura);
+
+    if (isWildcard) {
+      return;
+    }
+  }
+
   if (!pinturaResta) {
     toast.error("No hay pintura para restar");
   } else if (!pinturaResta <= 0) {

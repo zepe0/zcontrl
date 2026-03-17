@@ -65,32 +65,36 @@ export const normalizeUnit = (value) => {
 export const mmToMeters = (valueMm) => parseNumber(valueMm) / 1000;
 
 /**
- * Calcula la base de consumo de una linea antes de aplicar precio y recargo.
+ * Calcula la base económica de una línea usando medidas reales.
  *
  * @param {Object} line - Linea del albaran.
- * @returns {number} Base de consumo en la unidad correspondiente.
+ * @param {Object} [options] - Opciones del cálculo.
+ * @param {boolean} [options.includePrice=true] - Si es true devuelve importe base (ya multiplicado por precio).
+ * @returns {number} Base económica (o base física si includePrice es false).
  */
-export const getLineBaseAmount = (line) => {
+export const getLineBaseAmount = (line, { includePrice = true } = {}) => {
   const unit = normalizeUnit(line?.unidad_medida);
   const cantidad = parseNumber(line?.cantidad ?? line?.unid);
   const largoMm = parseNumber(line?.largo ?? line?.alto ?? line?.longitud);
   const anchoMm = parseNumber(line?.ancho);
+  const precio = parseNumber(line?.precio_unitario);
 
   const largoM = mmToMeters(largoMm);
-  const anchoM = mmToMeters(anchoMm);
+  const areaM2 = (largoMm * anchoMm) / 1000000;
 
-  // Compatibilidad con lineas antiguas ya calculadas sin medidas detalladas.
-  const legacyBase = parseNumber(line?.unid);
+  let base = cantidad;
 
-  if (unit === "m2") {
-    return largoMm && anchoMm ? cantidad * largoM * anchoM : legacyBase;
+  if (largoMm > 0 && anchoMm > 0) {
+    base = areaM2 * cantidad;
+  } else if (largoMm > 0 && unit === "ml") {
+    base = largoM * cantidad;
   }
 
-  if (unit === "ml") {
-    return largoMm ? cantidad * largoM : legacyBase;
+  if (includePrice) {
+    return base * precio;
   }
 
-  return cantidad;
+  return base;
 };
 
 /**
@@ -122,9 +126,9 @@ export const getEspesorRecargoFactor = (
  * @returns {number} Subtotal economico de la linea.
  */
 export const getLineSubtotal = (line, options = {}) => {
-  const baseAmount = getLineBaseAmount(line);
+  const baseAmount = getLineBaseAmount(line, { includePrice: true });
   const recargo = getEspesorRecargoFactor(line, options);
-  return baseAmount * parseNumber(line?.precio_unitario) * recargo;
+  return baseAmount * recargo;
 };
 
 /**
@@ -167,8 +171,8 @@ export const getPedidoTotals = (lines = [], options = {}) => {
  *    - ud sin medidas: consumo base 0.12 por unidad
  *    - m2 sin ancho: 0 (dato insuficiente)
  *
- * Nota: getLineBaseAmount sigue usando solo 'cantidad' para ud para no
- * alterar el precio de venta cuando la unidad es por pieza.
+ * Nota: el precio ahora también puede apoyarse en medidas reales cuando
+ * hay largo/ancho, incluso en líneas de tipo ud.
  *
  * @param {Object} linea - Linea del albaran.
  * @returns {number} Consumo calculado en kg.

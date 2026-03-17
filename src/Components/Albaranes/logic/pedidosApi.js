@@ -64,6 +64,52 @@ export const fetchCatalogoPinturas = async (apiBase) => {
 };
 
 /**
+ * Carga las tarifas estándar para cálculo de precio sugerido.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @returns {Promise<Array<any>>} Array de tarifas.
+ */
+export const fetchTarifasEstandar = async (apiBase) => {
+  try {
+    const response = await fetch(`${apiBase}/api/tarifas_estandar`);
+    if (!response.ok) return [];
+    const data = await parseJsonSafe(response);
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.tarifas)) return data.tarifas;
+    if (Array.isArray(data?.data?.tarifas)) return data.data.tarifas;
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Guarda un snapshot de tarifas estándar tal y como se muestran en pantalla.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @param {Array<any>} tarifas - Tarifas a persistir.
+ * @returns {Promise<{ok:boolean,status:number,data:any}>} Resultado de la operación.
+ */
+export const saveTarifasEstandar = async (apiBase, tarifas) => {
+  const payload = {
+    tarifas: Array.isArray(tarifas) ? tarifas : [],
+  };
+
+  const response = await fetch(`${apiBase}/api/tarifas_estandar`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await parseJsonSafe(response);
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+  };
+};
+
+/**
  * Crea un nuevo cliente.
  *
  * @param {string} apiBase - URL base de la API.
@@ -77,7 +123,11 @@ export const crearCliente = async (apiBase, cliente) => {
     body: JSON.stringify(cliente),
   });
 
-  return parseJsonSafe(response);
+  const data = await parseJsonSafe(response);
+  if (!response.ok || data?.error) {
+    throw new Error(data?.error || `Error ${response.status}`);
+  }
+  return data;
 };
 
 /**
@@ -129,10 +179,64 @@ export const updateMaterialLine = async (apiBase, payload) => {
  */
 export const updatePedidoEstado = async (apiBase, pedidoId, nuevoEstado) => {
   const response = await fetch(`${apiBase}/api/pedidos/${pedidoId}/estado`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ estado: nuevoEstado }),
   });
 
   return parseJsonSafe(response);
+};
+
+/**
+ * Actualiza en batch el estado de fabricación manual de un conjunto de líneas.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @param {Array<string|number>} lineIds - Identificadores de línea.
+ * @param {Object} [options] - Opciones de actualización.
+ * @param {boolean|number} [options.fabricacionManual=1] - Nuevo estado de fabricación manual.
+ * @param {boolean} [options.completado=true] - Flag de completado manual.
+ * @param {string|null} [options.fechaFabricacionManual] - Fecha ISO de fabricación manual.
+ * @returns {Promise<{ok:boolean,status:number,data:any}>} Resultado de la operación.
+ */
+export const completeLineasManualBatch = async (
+  apiBase,
+  lineIds,
+  options = {},
+) => {
+  const ids = Array.isArray(lineIds)
+    ? lineIds.filter((id) => id !== null && id !== undefined && id !== "")
+    : [];
+
+  const nextManual =
+    options.fabricacionManual === undefined
+      ? 1
+      : options.fabricacionManual
+        ? 1
+        : 0;
+  const payload = {
+    ids,
+    lineIds: ids,
+    completado:
+      options.completado === undefined
+        ? Boolean(nextManual)
+        : Boolean(options.completado),
+    fabricacion_manual: nextManual,
+  };
+
+  if (Object.prototype.hasOwnProperty.call(options, "fechaFabricacionManual")) {
+    payload.fecha_fabricacion_manual = options.fechaFabricacionManual;
+  }
+
+  const response = await fetch(`${apiBase}/api/linia/edit`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await parseJsonSafe(response);
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+  };
 };

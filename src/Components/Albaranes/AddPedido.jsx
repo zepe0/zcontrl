@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "./AddPedido.css";
 import "../../ral.css";
 import ClienteSearch from "../Clientes/ClienteSearch";
@@ -15,12 +22,15 @@ import {
   resolveLineRequiredStock,
 } from "./logic/calculosPedido";
 import {
+  completeLineasManualBatch,
   crearAlbaran,
   crearCliente,
   fetchCatalogoMateriales,
   fetchCatalogoPinturas,
+  fetchTarifasEstandar,
   fetchClientes,
   fetchPedidoDetalle,
+  saveTarifasEstandar,
   updateMaterialLine,
   updatePedidoEstado,
 } from "./logic/pedidosApi";
@@ -58,6 +68,10 @@ const measureFormatter = new Intl.NumberFormat("es-ES", {
 const createEmptyMaterialDraft = () => ({
   ref: "",
   mat: "",
+  nombre_snapshot: "",
+  tiene_imprimacion: false,
+  precio_sugerido: "",
+  precio_manual_override: false,
   unidad_medida: "ud",
   cantidad: "",
   largo: "",
@@ -140,6 +154,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const [materiales, setMateriales] = useState([]);
   const [catalogoMateriales, setCatalogoMateriales] = useState([]);
   const [catalogoPinturas, setCatalogoPinturas] = useState([]);
+  const [tarifasEstandar, setTarifasEstandar] = useState([]);
   const [showReview, setShowReview] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
 
@@ -168,9 +183,13 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   );
   const [isEditingCliente, setIsEditingCliente] = useState(false);
   const [isAddingCliente, setIsAddingCliente] = useState(false);
+  const [nuevoClienteNifError, setNuevoClienteNifError] = useState(false);
   const [lineSavedFlash, setLineSavedFlash] = useState(false);
   const [clienteSavedFlash, setClienteSavedFlash] = useState(false);
   const [showPricePanel, setShowPricePanel] = useState(false);
+  const [isModified, setIsModified] = useState(false);
+  const [isSavingTarifas, setIsSavingTarifas] = useState(false);
+  const [tarifasPanelDraft, setTarifasPanelDraft] = useState([]);
   const [isEditMode, setIsEditMode] = useState(!pedidoId);
   const [showInlineEditor, setShowInlineEditor] = useState(false);
   const [pedidoRefreshToken, setPedidoRefreshToken] = useState(0);
@@ -178,7 +197,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const [validationIssues, setValidationIssues] = useState([]);
   const [draftValidationIssues, setDraftValidationIssues] = useState([]);
   const [statusWarningInfo, setStatusWarningInfo] = useState(null);
-  const [selectedLineIndexes, setSelectedLineIndexes] = useState([]);
+  const [selectedLines, setSelectedLines] = useState([]);
   const [stockAvailability, setStockAvailability] = useState({
     hasIssues: false,
     issues: [],
@@ -267,8 +286,18 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       };
 
       const lineas = productos.map((item) => ({
+        lineId:
+          item.idLinea ||
+          item.id_linea ||
+          item.idLinia ||
+          item.linea_id ||
+          item.idlinea ||
+          item.id ||
+          null,
         ref: item.idMaterial || item.idMateriales || item.producto_id || "",
         mat: item.nombreMaterial || item.mat || "",
+        nombre_snapshot:
+          item.nombre_snapshot || item.nombreMaterial || item.mat || "",
         unidad_medida: resolveUnitFromItem(item),
         cantidad: item.cantidad ?? "",
         largo: normalizeDimensionToMm(item.largo || item.longitud || item.alto),
@@ -283,6 +312,13 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         Ral: item.ral || "",
         precio_unitario:
           item.precio_unitario ?? item.precioCatalogo ?? item.precio ?? "",
+        precio_sugerido:
+          item.precio_unitario ?? item.precioCatalogo ?? item.precio ?? "",
+        precio_manual_override: false,
+        tiene_imprimacion:
+          item.tiene_imprimacion === 1 ||
+          item.tiene_imprimacion === "1" ||
+          item.tiene_imprimacion === true,
         consumo: item.consumo || "",
         idMaterial: item.idMaterial || item.producto_id || item.idMateriales,
         fabricacion_manual:
@@ -303,7 +339,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         numAlbaran: numero,
         id: pedidoData?.id || pedidoData?.pedido_id || numero,
         cliente: cliente.nombre || "",
-        Nif: cliente.Nif || "",
+        Nif: cliente.Nif || cliente.nif || "",
         tel: cliente.tel || "",
         dir: cliente.dir || "",
         albaran: lineas,
@@ -342,6 +378,12 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     fetchCatalogoPinturas(API)
       .then((data) => setCatalogoPinturas(data))
       .catch(() => setCatalogoPinturas([]));
+    fetchTarifasEstandar(API)
+      .then((data) => {
+        setTarifasEstandar(data);
+      })
+
+      .catch(() => setTarifasEstandar([]));
   }, []);
 
   useEffect(() => {
@@ -431,7 +473,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         if (issue.scope !== "pedido") return true;
         if (issue.field === "cliente") return false;
         if (issue.field === "Nif") {
-          return !String(cliente?.Nif || "").trim();
+          return !String(cliente?.Nif || cliente?.nif || "").trim();
         }
         return true;
       }),
@@ -440,7 +482,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     setPedido((prevPedido) => ({
       ...prevPedido,
       cliente: cliente.nombre,
-      Nif: cliente.Nif,
+      Nif: cliente.Nif || cliente.nif || "",
       tel: cliente.tel,
       dir: cliente.dir,
     }));
@@ -476,11 +518,23 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
-    await guardarNuevoCliente(nuevoCliente);
-    setIsAddingCliente(false);
-    setNuevoCliente({ nombre: "", Nif: "", tel: "", dir: "" });
-    setClienteSavedFlash(true);
-    setTimeout(() => setClienteSavedFlash(false), 2000);
+    try {
+      await guardarNuevoCliente(nuevoCliente);
+      setIsAddingCliente(false);
+      setNuevoCliente({ nombre: "", Nif: "", tel: "", dir: "" });
+      setNuevoClienteNifError(false);
+      setClienteSavedFlash(true);
+      setTimeout(() => setClienteSavedFlash(false), 2000);
+    } catch (err) {
+      toast.error(err.message || "Error al crear el cliente");
+      if (
+        String(err.message || "")
+          .toLowerCase()
+          .includes("nif")
+      ) {
+        setNuevoClienteNifError(true);
+      }
+    }
   };
 
   const guardarNuevoCliente = async (nuevoClienteData) => {
@@ -512,6 +566,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const handleNuevoClienteChange = (e) => {
     const { name, value } = e.target;
     setNuevoCliente((prev) => ({ ...prev, [name]: value }));
+    if (name === "Nif") setNuevoClienteNifError(false);
   };
 
   // utility to close any secondary modal that may be open
@@ -543,6 +598,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       next[index] = {
         ...next[index],
         precio_unitario: safeValue,
+        precio_manual_override: true,
       };
       return {
         ...prevPedido,
@@ -556,6 +612,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         next[index] = {
           ...next[index],
           precio_unitario: safeValue,
+          precio_manual_override: true,
         };
       }
       return next;
@@ -563,6 +620,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   const handleRemoveMaterialLine = (indexToRemove) => {
+    const removedLine = pedido?.albaran?.[indexToRemove];
+    const removedLineId =
+      removedLine?.lineId || removedLine?.idLinea || removedLine?.id || null;
+
     setPedido((prevPedido) => ({
       ...prevPedido,
       albaran: prevPedido.albaran.filter((_, index) => index !== indexToRemove),
@@ -573,18 +634,26 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       prev.filter((_, index) => index !== indexToRemove),
     );
 
-    setSelectedLineIndexes((prev) =>
-      prev
-        .filter((idx) => idx !== indexToRemove)
-        .map((idx) => (idx > indexToRemove ? idx - 1 : idx)),
-    );
+    if (
+      removedLineId !== null &&
+      removedLineId !== undefined &&
+      removedLineId !== ""
+    ) {
+      setSelectedLines((prev) => prev.filter((id) => id !== removedLineId));
+    }
   };
 
   const getLineWithFieldChange = (line, field, value) => {
+    const previousLine = line || {};
     const next = {
-      ...(line || {}),
+      ...previousLine,
       [field]: value,
     };
+    let isCatalogSelectionByMat = false;
+    let shouldRefreshTarifa =
+      field === "ral" ||
+      field === "unidad_medida" ||
+      field === "tiene_imprimacion";
 
     if (field === "mat") {
       const selectedMaterial = catalogoMateriales.find(
@@ -592,6 +661,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       );
 
       if (selectedMaterial) {
+        isCatalogSelectionByMat = true;
         const selectedUnit = normalizeUnit(
           selectedMaterial.unidad_medida ||
             selectedMaterial.unidad ||
@@ -604,42 +674,56 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         next.ref = selectedMaterial.id || next.ref || "";
         next.idMaterial = selectedMaterial.id || next.idMaterial || next.ref;
         next.unidad_medida = selectedUnit;
+        next.nombre_snapshot = selectedMaterial.nombre || value;
+        next.precio_manual_override = false;
+        next.precio_unitario =
+          selectedMaterial.precio ??
+          selectedMaterial.precioCatalogo ??
+          selectedMaterial.precio_unitario ??
+          getDefaultUnitPrice(selectedUnit);
+        next.precio_sugerido = next.precio_unitario;
         next.refObra =
           selectedMaterial.refObra ||
           selectedMaterial.obra ||
           selectedMaterial.referencia ||
           next.refObra ||
           "";
+        shouldRefreshTarifa = true;
 
-        next.precio_unitario =
-          selectedMaterial.precio ??
-          selectedMaterial.precioCatalogo ??
-          selectedMaterial.precio_unitario ??
-          next.precio_unitario ??
-          getDefaultUnitPrice(selectedUnit);
+        // Autocompletar dimensiones desde el catálogo si existen.
+        const catalogLargo = String(
+          selectedMaterial.largo ??
+            selectedMaterial.longitud ??
+            selectedMaterial.alto ??
+            "",
+        ).trim();
+        const catalogAncho = String(selectedMaterial.ancho ?? "").trim();
+        const catalogEspesor = String(selectedMaterial.espesor ?? "").trim();
+
+        next.largo = catalogLargo || (selectedUnit !== "ud" ? "1000" : "");
+        next.longitud = next.largo;
+        next.ancho = catalogAncho || (selectedUnit === "m2" ? "1000" : "");
+        next.espesor = catalogEspesor || "";
 
         next.cantidad = next.cantidad || "1";
-
-        if (selectedUnit === "ml") {
-          next.largo = next.largo || next.longitud || "1000";
-          next.longitud = next.largo;
-          next.ancho = "";
-        } else if (selectedUnit === "m2") {
-          next.largo = next.largo || next.longitud || "1000";
-          next.longitud = next.largo;
-          next.ancho = next.ancho || "1000";
-        }
       } else {
         const selectedUnit = normalizeUnit(next.unidad_medida || "ud");
-        next.precio_unitario = getDefaultUnitPrice(selectedUnit);
+        next.nombre_snapshot = value;
+        if (!next.precio_manual_override) {
+          next.precio_unitario = getDefaultUnitPrice(selectedUnit);
+        }
       }
     }
 
     if (field === "unidad_medida") {
       const unit = normalizeUnit(value);
       next.unidad_medida = unit;
-      next.precio_unitario = getDefaultUnitPrice(unit);
       next.cantidad = next.cantidad || "1";
+      shouldRefreshTarifa = true;
+
+      if (!next.precio_manual_override) {
+        next.precio_unitario = getDefaultUnitPrice(unit);
+      }
 
       // ud ahora admite dimensiones para cálculo híbrido de consumo: no limpiar.
       if (unit === "ml") {
@@ -662,13 +746,24 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     if (field === "ral") {
       next.ral = value;
       next.Ral = value;
+      shouldRefreshTarifa = true;
+    }
+
+    if (field === "tiene_imprimacion") {
+      shouldRefreshTarifa = true;
     }
 
     // Recalcular unid (base de precio) y consumo en tiempo real tras cualquier cambio.
-    next.unid = getLineBaseAmount(next);
+    next.unid = getLineBaseAmount(next, { includePrice: false });
     next.consumo = calculatePaintConsumption(next);
 
-    return next;
+    const withTarifa = shouldRefreshTarifa ? applyTarifaSuggestion(next) : next;
+
+    if (!isCatalogSelectionByMat) {
+      return applyUniqueRefForCatalogVariant(previousLine, withTarifa);
+    }
+
+    return withTarifa;
   };
 
   const handleLineFieldChange = (index, field, value) => {
@@ -721,6 +816,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     espesor: String(line?.espesor ?? "").trim(),
     refObra: String(line?.refObra || "").trim(),
     ral: String(line?.Ral || line?.ral || "").trim(),
+    tiene_imprimacion:
+      line?.tiene_imprimacion === true ||
+      line?.tiene_imprimacion === 1 ||
+      line?.tiene_imprimacion === "1",
     precio_unitario: String(line?.precio_unitario ?? "").trim(),
     fabricacion_manual: isLineFabricacionManual(line),
   });
@@ -739,11 +838,220 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       .trim()
       .toLowerCase();
 
+  const getRefToken = (value) => String(value ?? "").trim();
+
+  const getCatalogRefToken = (item) =>
+    getRefToken(item?.id || item?.idMaterial || item?.producto_id || item?.ref);
+
+  const getLineEditableSignature = (line) =>
+    JSON.stringify({
+      mat: normalizeText(line?.mat),
+      unidad_medida: normalizeUnit(line?.unidad_medida),
+      cantidad: String(line?.cantidad ?? "").trim(),
+      largo: String(line?.largo ?? line?.longitud ?? "").trim(),
+      ancho: String(line?.ancho ?? "").trim(),
+      espesor: String(line?.espesor ?? "").trim(),
+      refObra: String(line?.refObra ?? "").trim(),
+      ral: normalizeText(line?.ral || line?.Ral),
+      precio_unitario: String(line?.precio_unitario ?? "").trim(),
+      consumo: String(line?.consumo ?? "").trim(),
+    });
+
+  const buildUniqueRefVariant = (baseRef, lineRefToIgnore = "") => {
+    const normalizedBase = getRefToken(baseRef) || "MAT";
+    const ignore = getRefToken(lineRefToIgnore);
+    const usedRefs = new Set();
+
+    (materiales || []).forEach((linea) => {
+      const token = getRefToken(linea?.ref || linea?.idMaterial);
+      if (token && token !== ignore) {
+        usedRefs.add(token);
+      }
+    });
+
+    (catalogoMateriales || []).forEach((item) => {
+      const token = getCatalogRefToken(item);
+      if (token && token !== ignore) {
+        usedRefs.add(token);
+      }
+    });
+
+    let sequence = 1;
+    let candidate = `${normalizedBase}-VAR-${sequence}`;
+    while (usedRefs.has(candidate)) {
+      sequence += 1;
+      candidate = `${normalizedBase}-VAR-${sequence}`;
+    }
+
+    return candidate;
+  };
+
+  const applyUniqueRefForCatalogVariant = (prevLine, nextLine) => {
+    const prevRef = getRefToken(prevLine?.ref || prevLine?.idMaterial);
+    if (!prevRef) return nextLine;
+
+    const belongsToCatalog = (catalogoMateriales || []).some(
+      (item) => getCatalogRefToken(item) === prevRef,
+    );
+    if (!belongsToCatalog) return nextLine;
+
+    if (
+      getLineEditableSignature(prevLine) === getLineEditableSignature(nextLine)
+    ) {
+      return nextLine;
+    }
+
+    const uniqueRef = buildUniqueRefVariant(
+      prevRef,
+      getRefToken(prevLine?.ref),
+    );
+    return {
+      ...nextLine,
+      ref: uniqueRef,
+      idMaterial: uniqueRef,
+    };
+  };
+
+  const normalizeToken = useCallback(
+    (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""),
+    [],
+  );
+
+  const isWildcardPaintToken = useCallback(
+    (value) => {
+      const token = normalizeToken(value);
+      return token === "pendiente" || token === "sistema";
+    },
+    [normalizeToken],
+  );
+
+  const hasPendingColorOnLine = useCallback(
+    (linea) => {
+      const rawRal = String(linea?.Ral || linea?.ral || "").trim();
+      const rawPintura = String(
+        linea?.pintura || linea?.nombrePintura || linea?.mat || "",
+      ).trim();
+
+      return isWildcardPaintToken(rawRal) || isWildcardPaintToken(rawPintura);
+    },
+    [isWildcardPaintToken],
+  );
+
+  const getLineIdentifier = (linea) =>
+    linea?.lineId ||
+    linea?.idLinea ||
+    linea?.id_linea ||
+    linea?.idLinia ||
+    linea?.linea_id ||
+    linea?.id ||
+    null;
+
   const getDefaultUnitPrice = (unitValue) => {
     const unit = normalizeUnit(unitValue);
     const price = priceDefaults[unit];
     return Number.isFinite(Number(price)) ? Number(price) : 0;
   };
+
+  const hasValidRal = useCallback(
+    (value) => {
+      const token = normalizeToken(value);
+      return Boolean(token) && token !== "-" && token !== "sin especificar";
+    },
+    [normalizeToken],
+  );
+
+  const getTarifaRowForUnit = useCallback(
+    (unitValue) => {
+      const unit = normalizeUnit(unitValue);
+      return (tarifasEstandar || []).find((item) => {
+        const itemUnit = normalizeUnit(
+          item?.unidad_medida || item?.unidad || item?.tipo_unidad || "ud",
+        );
+        return itemUnit === unit;
+      });
+    },
+    [tarifasEstandar],
+  );
+
+  const getSuggestedTarifaPrice = useCallback(
+    (line) => {
+      const tarifa = getTarifaRowForUnit(line?.unidad_medida);
+      if (!tarifa) return null;
+
+      const hasRal = hasValidRal(line?.Ral || line?.ral);
+      const hasImp =
+        line?.tiene_imprimacion === true ||
+        line?.tiene_imprimacion === 1 ||
+        line?.tiene_imprimacion === "1";
+
+      if (hasRal && hasImp) {
+        const value = parseNumber(tarifa?.precio_color_mas_imp);
+        return value > 0 ? value : null;
+      }
+
+      if (hasRal) {
+        const value = parseNumber(tarifa?.precio_color);
+        return value > 0 ? value : null;
+      }
+
+      if (hasImp) {
+        const value = parseNumber(tarifa?.precio_imprimacion);
+        return value > 0 ? value : null;
+      }
+
+      return null;
+    },
+    [getTarifaRowForUnit, hasValidRal],
+  );
+
+  const applyTarifaSuggestion = useCallback(
+    (line, { force = false } = {}) => {
+      const suggested = getSuggestedTarifaPrice(line);
+      const next = {
+        ...line,
+        precio_sugerido: suggested ?? "",
+      };
+
+      const manualOverride =
+        line?.precio_manual_override === true ||
+        line?.precio_manual_override === 1 ||
+        line?.precio_manual_override === "1";
+
+      if (force || !manualOverride) {
+        if (suggested !== null) {
+          next.precio_unitario = suggested;
+        }
+      }
+
+      return next;
+    },
+    [getSuggestedTarifaPrice],
+  );
+
+  useEffect(() => {
+    if (!Array.isArray(tarifasEstandar) || tarifasEstandar.length === 0) return;
+
+    setPedido((prevPedido) => {
+      const baseLines = Array.isArray(prevPedido?.albaran)
+        ? prevPedido.albaran
+        : [];
+      const nextLines = baseLines.map((line) => applyTarifaSuggestion(line));
+      return {
+        ...prevPedido,
+        albaran: nextLines,
+      };
+    });
+
+    setMateriales((prev) => prev.map((line) => applyTarifaSuggestion(line)));
+    setDraftMaterial((prev) =>
+      applyTarifaSuggestion(prev || createEmptyMaterialDraft()),
+    );
+  }, [applyTarifaSuggestion, tarifasEstandar]);
 
   const isLineFabricacionManual = (linea) => {
     const raw = linea?.fabricacion_manual;
@@ -756,11 +1064,6 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     );
   };
 
-  const tieneErrorDeStock = (linea, pinturaStock) => {
-    const sinStock = !pinturaStock || pinturaStock <= 0;
-    return sinStock && Number(linea?.fabricacion_manual) !== 1;
-  };
-
   const buildLineUpdatePayload = (linea, overrides = {}) => {
     const nextManual =
       overrides.fabricacion_manual ?? isLineFabricacionManual(linea);
@@ -769,19 +1072,35 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       (nextManual
         ? linea?.fecha_fabricacion_manual || new Date().toISOString()
         : null);
+    const hasManualOverride =
+      linea?.precio_manual_override === true ||
+      linea?.precio_manual_override === 1 ||
+      linea?.precio_manual_override === "1";
+    const finalUnitPrice = hasManualOverride
+      ? linea?.precio_unitario
+      : (linea?.precio_sugerido ?? linea?.precio_unitario);
 
     return {
       idMaterial: linea?.idMaterial || linea?.ref,
+      producto_id: linea?.idMaterial || linea?.ref,
       cantidad: linea?.cantidad,
       consumo: resolveLineRequiredStock(linea),
       ral: linea?.ral || linea?.Ral,
       nombreMaterial: linea?.mat || linea?.nombreMaterial,
+      nombre_snapshot: linea?.nombre_snapshot || "",
+      tiene_imprimacion:
+        linea?.tiene_imprimacion === true ||
+        linea?.tiene_imprimacion === 1 ||
+        linea?.tiene_imprimacion === "1"
+          ? 1
+          : 0,
       refObra: linea?.refObra,
       pedido_id: pedido.numAlbaran,
       idALbaran: pedido.numAlbaran,
       estado: overrides.estado ?? pedido.estado,
-      precio: linea?.precio_unitario,
-      precio_unitario: linea?.precio_unitario,
+      precio: finalUnitPrice,
+      precio_unitario: finalUnitPrice,
+      precio_sugerido: linea?.precio_sugerido ?? "",
       largo: linea?.largo || linea?.longitud,
       ancho: linea?.ancho,
       espesor: linea?.espesor,
@@ -821,14 +1140,17 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const persistLineManualState = async (line, nextManual, nextDate) => {
     if (!isViewingPedido) return true;
 
+    const lineId = getLineIdentifier(line);
+    if (lineId === null || lineId === undefined || lineId === "") {
+      return false;
+    }
+
     try {
-      const result = await updateMaterialLine(
-        API,
-        buildLineUpdatePayload(line, {
-          fabricacion_manual: nextManual,
-          fecha_fabricacion_manual: nextDate,
-        }),
-      );
+      const result = await completeLineasManualBatch(API, [lineId], {
+        fabricacionManual: nextManual ? 1 : 0,
+        completado: nextManual,
+        fechaFabricacionManual: nextDate,
+      });
 
       return result.ok;
     } catch {
@@ -891,7 +1213,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       applyManualLineState(item.index, item.nextManual, item.nextDate);
     });
 
-    setSelectedLineIndexes([]);
+    setSelectedLines([]);
 
     if (successfulChanges.length > 0) {
       if (isViewingPedido) {
@@ -979,16 +1301,32 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       const source = Array.isArray(lineas) ? lineas : [];
       const issues = [];
 
+      const imprimacionItem = (catalogoPinturas || []).find(
+        (p) => String(p?.ral || "").trim() === "Imprimacion",
+      );
+      const imprimacionStock = parseNumber(imprimacionItem?.stock);
+
       source.forEach((linea, index) => {
         if (isLineFabricacionManual(linea)) return;
+        if (hasPendingColorOnLine(linea)) return;
 
         const rawRal = String(linea?.Ral || linea?.ral || "").trim();
-        if (!rawRal || rawRal === "-") return;
+        const hasRal = Boolean(rawRal) && rawRal !== "-";
+        const hasImp =
+          linea?.tiene_imprimacion === true ||
+          linea?.tiene_imprimacion === 1 ||
+          linea?.tiene_imprimacion === "1";
+
+        if (!hasRal && !hasImp) return;
 
         const required = resolveLineRequiredStock(linea);
 
         const lineRalKey = normalizeRalKey(rawRal);
         const lineRalCode = extractRalCode(rawRal);
+
+        const byRalName = (catalogoPinturas || []).find(
+          (item) => normalizeRalKey(item?.ral) === normalizeRalKey(rawRal),
+        );
 
         const byExactKey = (catalogoPinturas || []).find(
           (item) =>
@@ -997,23 +1335,45 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         );
 
         const byCode =
+          byRalName ||
           byExactKey ||
           (catalogoPinturas || []).find(
             (item) => extractRalCode(item?.ral) === lineRalCode,
           );
 
-        const stock = parseNumber(byCode?.stock);
+        // Si la pintura RAL no existe en catálogo, asumimos stock actual 0.
+        const ralStock = byCode ? parseNumber(byCode?.stock) : 0;
         const label = byCode
           ? `${byCode.ral || rawRal} ${byCode.marca || ""}`.trim()
           : rawRal;
 
-        if (tieneErrorDeStock(linea, stock)) {
+        const missingRal = hasRal
+          ? Math.max(required - (Number.isFinite(ralStock) ? ralStock : 0), 0)
+          : 0;
+        const missingImp = hasImp
+          ? Math.max(
+              required -
+                (Number.isFinite(imprimacionStock) ? imprimacionStock : 0),
+              0,
+            )
+          : 0;
+
+        if (missingRal > 0 || missingImp > 0) {
+          const missing = Math.max(missingRal, missingImp);
           issues.push({
             lineIndex: index,
             material: String(linea?.mat || linea?.nombreMaterial || "").trim(),
-            ral: label || rawRal,
-            stock,
+            ral:
+              missingRal > 0 && missingImp > 0
+                ? `${label || rawRal} + Imprimacion`
+                : missingImp > 0
+                  ? "Imprimacion"
+                  : label || rawRal,
+            stock: hasRal ? ralStock : imprimacionStock,
             required,
+            missing,
+            missingRal,
+            missingImp,
           });
         }
       });
@@ -1029,7 +1389,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
             : "",
       };
     },
-    [catalogoPinturas],
+    [catalogoPinturas, hasPendingColorOnLine],
   );
 
   const validateStockForStatus = () => {
@@ -1045,31 +1405,42 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     setStockAvailability(stockCheck);
 
     const baseLines = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
-    const lineas = (stockCheck.issues || []).map((issue) => {
-      const original = baseLines[issue.lineIndex] || {};
-      return {
-        ...original,
-        stockVal: Number(issue.stock) || 0,
-        consumoTotal: Number(issue.required) || 0,
-        _ralLabel: issue.ral,
-      };
-    });
-    const issues = lineas.filter(
-      (l) => l.stockVal < l.consumoTotal && Number(l.fabricacion_manual) !== 1,
-    );
+    const pendingColorLines = baseLines.filter(hasPendingColorOnLine);
+
+    if (pendingColorLines.length > 0) {
+      setStatusWarningInfo({
+        blockedTo: "Pendiente",
+        reason: "pending-color",
+        message:
+          "Hay líneas con color pendiente. Asigna un RAL/pintura real para continuar.",
+        missingRals: ["PENDIENTE"],
+      });
+
+      setPedido((prevPedido) => {
+        const current = normalizeOrderStatus(prevPedido?.estado);
+        if (current === "Pendiente") {
+          return prevPedido;
+        }
+
+        return {
+          ...prevPedido,
+          estado: "Pendiente",
+        };
+      });
+      return;
+    }
+
+    const issues = stockCheck.issues || [];
 
     if (issues.length > 0) {
       const missingRals = [
         ...new Set(
-          issues
-            .map((linea) =>
-              String(linea._ralLabel || linea.Ral || linea.ral || "").trim(),
-            )
-            .filter(Boolean),
+          issues.map((issue) => String(issue.ral || "").trim()).filter(Boolean),
         ),
       ];
       setStatusWarningInfo({
         blockedTo: "Pendiente",
+        reason: "stock",
         message: `Falta stock de: ${missingRals.slice(0, 4).join(", ")}`,
         missingRals,
       });
@@ -1077,17 +1448,18 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     }
 
     setStatusWarningInfo(null);
-  }, [pedido?.albaran, checkStockAvailability]);
+  }, [pedido?.albaran, checkStockAvailability, hasPendingColorOnLine]);
 
   useEffect(() => {
     const lines = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
-    const maxIndex = lines.length - 1;
-    setSelectedLineIndexes((prev) =>
-      prev.filter(
-        (idx) =>
-          idx <= maxIndex && Number(lines[idx]?.fabricacion_manual) !== 1,
-      ),
+    const validIds = new Set(
+      lines
+        .filter((linea) => Number(linea?.fabricacion_manual) !== 1)
+        .map((linea) => getLineIdentifier(linea))
+        .filter((id) => id !== null && id !== undefined && id !== ""),
     );
+
+    setSelectedLines((prev) => prev.filter((id) => validIds.has(id)));
   }, [pedido?.albaran]);
 
   const handleOrderStatusChange = async (nextStatus, context) => {
@@ -1109,6 +1481,31 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     }
 
     if (["EnProceso", "Almacén"].includes(toStatus)) {
+      const lineasPedido = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
+      const hasPendingColor = lineasPedido.some(hasPendingColorOnLine);
+      if (hasPendingColor) {
+        const message =
+          "Hay líneas con color pendiente. No puedes pasar a 'En proceso' hasta asignar un color real.";
+
+        setPedido((prevPedido) => ({
+          ...prevPedido,
+          estado: "Pendiente",
+        }));
+
+        setStatusWarningInfo({
+          blockedTo: "Pendiente",
+          reason: "pending-color",
+          message,
+          missingRals: ["PENDIENTE"],
+        });
+        toast.warning(message);
+        return {
+          ok: true,
+          message,
+          autoStatus: "Pendiente",
+        };
+      }
+
       const stockCheck = validateStockForStatus();
       if (!stockCheck.ok) {
         const listado = [...new Set(stockCheck.noStockRal)]
@@ -1125,6 +1522,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
         setStatusWarningInfo({
           blockedTo: "Pendiente",
+          reason: "stock",
           message,
           missingRals: stockCheck.noStockRal,
         });
@@ -1137,18 +1535,55 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       }
     }
 
-    setStatusWarningInfo(null);
+    // Obtener el ID del pedido
+    const pedidoId = pedido?.id || pedido?.numAlbaran || numeroAlbaran;
 
-    setPedido((prevPedido) => ({
-      ...prevPedido,
-      estado: toStatus,
-    }));
+    // Si el pedido es nuevo (sin ID), solo actualizar estado local sin perseguir en servidor
+    if (!pedidoId || pedidoId === "nuevo") {
+      setPedido((prevPedido) => ({
+        ...prevPedido,
+        estado: toStatus,
+      }));
 
-    if (currentStatus !== toStatus) {
-      toast.success(`Estado actualizado: ${toStatus}`);
+      if (currentStatus !== toStatus) {
+        toast.success(`Estado actualizado: ${toStatus}`);
+      }
+
+      return { ok: true };
     }
 
-    return { ok: true };
+    // Hacer petición PATCH al servidor para actualizar el estado
+    try {
+      const response = await updatePedidoEstado(API, pedidoId, toStatus);
+
+      // Si hay error en la respuesta, no actualizar el estado local
+      if (!response || response.error) {
+        const errorMsg =
+          response?.error || "No se pudo actualizar el estado en el servidor.";
+        toast.error(errorMsg);
+        return {
+          ok: false,
+          message: errorMsg,
+        };
+      }
+
+      // Actualizar el estado local si el servidor lo aceptó
+      setPedido((prevPedido) => ({
+        ...prevPedido,
+        estado: toStatus,
+      }));
+
+      toast.success(`Estado actualizado: ${toStatus}`);
+      return { ok: true };
+    } catch (error) {
+      const errorMsg =
+        error?.message || "Error al actualizar el estado del pedido.";
+      toast.error(errorMsg);
+      return {
+        ok: false,
+        message: errorMsg,
+      };
+    }
   };
 
   const stockIssueByLine = useMemo(
@@ -1162,8 +1597,12 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     [stockAvailability],
   );
 
-  const allLineIndexes = useMemo(
-    () => (pedido?.albaran || []).map((_, index) => index),
+  const selectableLineIds = useMemo(
+    () =>
+      (pedido?.albaran || [])
+        .filter((linea) => Number(linea?.fabricacion_manual) !== 1)
+        .map((linea) => getLineIdentifier(linea))
+        .filter((id) => id !== null && id !== undefined && id !== ""),
     [pedido?.albaran],
   );
 
@@ -1177,6 +1616,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       if (!id || id === "nuevo") return;
 
       const lineas = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
+      const hasPendingColor = lineas.some(hasPendingColorOnLine);
       const todasManuales =
         lineas.length > 0 &&
         lineas.every((l) => Number(l?.fabricacion_manual) === 1);
@@ -1184,7 +1624,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       const esEstadoInicial =
         estadoActual === "Borrador" || estadoActual === "Confirmado";
 
-      if (!todasManuales || !esEstadoInicial) return;
+      if (!todasManuales || !esEstadoInicial || hasPendingColor) return;
 
       try {
         isUpdatingStatusRef.current = true;
@@ -1222,51 +1662,66 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     numeroAlbaran,
     pedidoId,
     fetchPedidoData,
+    hasPendingColorOnLine,
   ]);
 
   const areAllLinesSelected =
-    allLineIndexes.length > 0 &&
-    allLineIndexes.every((idx) => selectedLineIndexes.includes(idx));
+    selectableLineIds.length > 0 &&
+    selectableLineIds.every((id) => selectedLines.includes(id));
 
   const handleViewInventory = () => {
-    window.location.href = "/pinturas";
+    window.location.href = "/zcontrol/#/Materiales";
   };
 
-  const toggleLineSelection = (lineIndex) => {
-    setSelectedLineIndexes((prev) =>
-      prev.includes(lineIndex)
-        ? prev.filter((idx) => idx !== lineIndex)
-        : [...prev, lineIndex],
+  const toggleLineSelection = (lineId) => {
+    if (lineId === null || lineId === undefined || lineId === "") return;
+
+    setSelectedLines((prev) =>
+      prev.includes(lineId)
+        ? prev.filter((id) => id !== lineId)
+        : [...prev, lineId],
     );
   };
 
   const toggleSelectAllLines = () => {
-    setSelectedLineIndexes((prev) =>
-      prev.length === allLineIndexes.length ? [] : allLineIndexes,
-    );
-  };
-
-  const handleMarkSelectedManual = async () => {
-    await applyManualChangesBatch(
-      selectedLineIndexes,
-      true,
-      `${selectedLineIndexes.length} línea(s) marcadas como Hechas manualmente.`,
+    setSelectedLines((prev) =>
+      prev.length === selectableLineIds.length ? [] : selectableLineIds,
     );
   };
 
   const handleCompleteInsufficientManual = async () => {
-    const insufficientIndexes = (stockAvailability.issues || []).map(
-      (issue) => issue.lineIndex,
-    );
+    if (selectedLines.length === 0) {
+      toast.info("Selecciona al menos una línea.");
+      return;
+    }
 
-    await applyManualChangesBatch(
-      insufficientIndexes,
-      true,
-      "Producción completada manualmente para líneas sin stock.",
-    );
+    if (!isViewingPedido) {
+      toast.info("Guarda el pedido antes de completar líneas manualmente.");
+      return;
+    }
 
-    if (isViewingPedido) {
+    try {
+      const result = await completeLineasManualBatch(API, selectedLines);
+      const hasApiError =
+        !result?.ok || Boolean(result?.data?.error) || result?.ok === false;
+
+      if (hasApiError) {
+        throw new Error(
+          result?.data?.error ||
+            "No se pudieron completar manualmente las líneas seleccionadas.",
+        );
+      }
+
+      toast.success(
+        `${selectedLines.length} línea(s) marcadas como completadas manualmente.`,
+      );
+      setSelectedLines([]);
       setPedidoRefreshToken((prev) => prev + 1);
+    } catch (error) {
+      toast.error(
+        error?.message ||
+          "No se pudieron completar manualmente las líneas seleccionadas.",
+      );
     }
   };
 
@@ -1279,6 +1734,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       espesor: "espesor",
       refObra: "refObra",
       ral: "ral",
+      tiene_imprimacion: "ral",
       precio_unitario: "precio",
       precio: "precio",
     };
@@ -1308,6 +1764,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     const espesor = parseNumber(draftMaterial?.espesor);
     const precio = parseNumber(draftMaterial?.precio_unitario);
     const ral = String(draftMaterial?.Ral || draftMaterial?.ral || "").trim();
+    const hasImp =
+      draftMaterial?.tiene_imprimacion === true ||
+      draftMaterial?.tiene_imprimacion === 1 ||
+      draftMaterial?.tiene_imprimacion === "1";
 
     if (!String(draftMaterial?.mat || "").trim()) {
       issues.push({ field: "nombre" });
@@ -1333,7 +1793,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       issues.push({ field: "refObra" });
     }
 
-    if (!ral) {
+    if (!ral && !hasImp) {
       issues.push({ field: "ral" });
     }
 
@@ -1342,13 +1802,6 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     }
 
     return issues;
-  };
-
-  const handlePriceDefaultChange = (unit, rawValue) => {
-    setPriceDefaults((prev) => ({
-      ...prev,
-      [unit]: rawValue === "" ? "" : Number(rawValue),
-    }));
   };
 
   const handleDraftMaterialChange = (field, value) => {
@@ -1361,6 +1814,12 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         [field]: value,
         ...(field === "ral" ? { Ral: value } : {}),
       };
+      let isCatalogSelectionByMat = false;
+      let shouldRefreshTarifa = false;
+
+      if (field === "precio_unitario") {
+        next.precio_manual_override = true;
+      }
 
       if (field === "mat") {
         const selectedMaterial = catalogoMateriales.find(
@@ -1368,6 +1827,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         );
 
         if (selectedMaterial) {
+          isCatalogSelectionByMat = true;
           const selectedUnit = normalizeUnit(
             selectedMaterial.unidad_medida ||
               selectedMaterial.unidad ||
@@ -1378,44 +1838,54 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
           next.ref = selectedMaterial.id || "";
           next.unidad_medida = selectedUnit;
+          next.nombre_snapshot = selectedMaterial.nombre || value;
+          next.precio_manual_override = false;
+          next.precio_unitario =
+            selectedMaterial.precio ??
+            selectedMaterial.precioCatalogo ??
+            selectedMaterial.precio_unitario ??
+            getDefaultUnitPrice(selectedUnit);
+          next.precio_sugerido = next.precio_unitario;
           next.refObra =
             selectedMaterial.refObra ||
             selectedMaterial.obra ||
             selectedMaterial.referencia ||
             next.refObra ||
             "";
+          shouldRefreshTarifa = true;
 
-          // Prioriza el precio definido en el artículo; si no existe usa tarifa rápida por unidad.
-          next.precio_unitario =
-            selectedMaterial.precio ??
-            selectedMaterial.precioCatalogo ??
-            selectedMaterial.precio_unitario ??
-            getDefaultUnitPrice(selectedUnit);
+          // Autocompletar dimensiones desde el catálogo si existen.
+          const catalogLargo = String(
+            selectedMaterial.largo ??
+              selectedMaterial.longitud ??
+              selectedMaterial.alto ??
+              "",
+          ).trim();
+          const catalogAncho = String(selectedMaterial.ancho ?? "").trim();
+          const catalogEspesor = String(selectedMaterial.espesor ?? "").trim();
 
+          next.largo = catalogLargo || (selectedUnit !== "ud" ? "1000" : "");
+          next.longitud = next.largo;
+          next.ancho = catalogAncho || (selectedUnit === "m2" ? "1000" : "");
+          next.espesor = catalogEspesor || "";
           next.consumo = selectedMaterial.consumo ?? "";
-
-          // Autorrelleno base para acelerar la línea.
           next.cantidad = next.cantidad || "1";
-          if (selectedUnit === "ml") {
-            next.largo = next.largo || next.longitud || "1000";
-            next.longitud = next.largo;
-            next.ancho = "";
-            next.espesor = "";
-          } else if (selectedUnit === "m2") {
-            next.largo = next.largo || next.alto || "1000";
-            next.ancho = next.ancho || "1000";
-            next.longitud = next.largo;
-          }
         } else {
           const selectedUnit = normalizeUnit(next.unidad_medida || "ud");
-          next.precio_unitario = getDefaultUnitPrice(selectedUnit);
+          if (!next.precio_manual_override) {
+            next.precio_unitario = getDefaultUnitPrice(selectedUnit);
+          }
+          next.nombre_snapshot = value;
         }
       }
 
       if (field === "unidad_medida") {
         const unit = normalizeUnit(value);
         next.unidad_medida = unit;
-        next.precio_unitario = getDefaultUnitPrice(unit);
+        shouldRefreshTarifa = true;
+        if (!next.precio_manual_override) {
+          next.precio_unitario = getDefaultUnitPrice(unit);
+        }
         next.cantidad = next.cantidad || "1";
 
         // ud ahora admite dimensiones para cálculo híbrido de consumo: no limpiar.
@@ -1438,6 +1908,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       }
 
       if (field === "ral") {
+        shouldRefreshTarifa = true;
         const selectedRal = catalogoPinturas.find(
           (item) =>
             normalizeText(`${item.ral} ${item.marca || ""}`) ===
@@ -1450,11 +1921,23 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         }
       }
 
+      if (field === "tiene_imprimacion") {
+        shouldRefreshTarifa = true;
+      }
+
       // Recalcular unid (base de precio) y consumo en tiempo real tras cualquier cambio.
-      next.unid = getLineBaseAmount(next);
+      next.unid = getLineBaseAmount(next, { includePrice: false });
       next.consumo = calculatePaintConsumption(next);
 
-      return next;
+      const withTarifa = shouldRefreshTarifa
+        ? applyTarifaSuggestion(next)
+        : next;
+
+      if (!isCatalogSelectionByMat) {
+        return applyUniqueRefForCatalogVariant(base, withTarifa);
+      }
+
+      return withTarifa;
     });
   };
 
@@ -1498,7 +1981,9 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
-    const baseAmount = getLineBaseAmount(draftMaterial);
+    const baseAmount = getLineBaseAmount(draftMaterial, {
+      includePrice: false,
+    });
 
     const normalizedMaterial = {
       ...draftMaterial,
@@ -1667,6 +2152,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       const espesor = parseNumber(linea?.espesor);
       const precio = parseNumber(linea?.precio_unitario);
       const ral = String(linea?.Ral || linea?.ral || "").trim();
+      const hasImp =
+        linea?.tiene_imprimacion === true ||
+        linea?.tiene_imprimacion === 1 ||
+        linea?.tiene_imprimacion === "1";
 
       if (!String(linea?.mat || linea?.nombreMaterial || "").trim()) {
         issues.push({
@@ -1723,7 +2212,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         });
       }
 
-      if (!ral) {
+      if (!ral && !hasImp) {
         issues.push({
           scope: "linea",
           lineNo,
@@ -1986,10 +2475,31 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
     const pedidoConConsumo = {
       ...pedido,
-      albaran: (pedido?.albaran || []).map((linea) => ({
-        ...linea,
-        consumo: resolveLineRequiredStock(linea),
-      })),
+      albaran: (pedido?.albaran || []).map((linea) => {
+        const hasManualOverride =
+          linea?.precio_manual_override === true ||
+          linea?.precio_manual_override === 1 ||
+          linea?.precio_manual_override === "1";
+        const finalUnitPrice = hasManualOverride
+          ? linea?.precio_unitario
+          : (linea?.precio_sugerido ?? linea?.precio_unitario);
+
+        return {
+          ...linea,
+          producto_id: linea?.idMaterial || linea?.ref,
+          precio_unitario: finalUnitPrice,
+          largo: linea?.largo || linea?.longitud || "",
+          ancho: linea?.ancho || "",
+          espesor: linea?.espesor || "",
+          tiene_imprimacion:
+            linea?.tiene_imprimacion === true ||
+            linea?.tiene_imprimacion === 1 ||
+            linea?.tiene_imprimacion === "1"
+              ? 1
+              : 0,
+          consumo: resolveLineRequiredStock(linea),
+        };
+      }),
     };
 
     const data = await crearAlbaran(API, pedidoConConsumo);
@@ -2045,7 +2555,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       setPedido((prevPedido) => ({
         ...prevPedido,
         cliente: reviewedData.cliente.nombre || "",
-        Nif: reviewedData.cliente.Nif || "",
+        Nif: reviewedData.cliente.Nif || reviewedData.cliente.nif || "",
         tel: reviewedData.cliente.tel || "",
         dir: reviewedData.cliente.dir || "",
         numAlbaran: reviewedData.numAlbaran || prevPedido.numAlbaran,
@@ -2100,6 +2610,118 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const phoneUrl = phoneDigits ? `tel:${phoneDigits}` : "";
   const draftUnit = normalizeUnit(draftMaterial?.unidad_medida);
   const lineas = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
+
+  const buildTarifasPanelRows = useCallback((sourceTarifas) => {
+    const source = Array.isArray(sourceTarifas) ? sourceTarifas : [];
+    const order = { ud: 0, ml: 1, m2: 2 };
+
+    return source
+      .map((item, index) => {
+        const unit = normalizeUnit(
+          item?.unidad_medida || item?.unidad || item?.tipo_unidad || "ud",
+        );
+
+        return {
+          id:
+            item?.id || item?.tarifa_id || item?.idTarifa || `${unit}-${index}`,
+          unit,
+          precioColor: String(item?.precio_color ?? ""),
+          // Importante: este valor ya viene calculado desde backend.
+          precioColorMasImp: String(item?.precio_color_mas_imp ?? ""),
+          precioImprimacion: String(item?.precio_imprimacion ?? ""),
+        };
+      })
+      .sort((a, b) => (order[a.unit] ?? 99) - (order[b.unit] ?? 99));
+  }, []);
+
+  useEffect(() => {
+    if (isModified) return;
+    setTarifasPanelDraft(buildTarifasPanelRows(tarifasEstandar));
+  }, [tarifasEstandar, isModified, buildTarifasPanelRows]);
+
+  const tarifasPanelRows = useMemo(() => {
+    if (Array.isArray(tarifasPanelDraft) && tarifasPanelDraft.length > 0) {
+      return tarifasPanelDraft;
+    }
+
+    const source = Array.isArray(tarifasEstandar) ? tarifasEstandar : [];
+    const order = { ud: 0, ml: 1, m2: 2 };
+
+    return source
+      .map((item, index) => {
+        const unit = normalizeUnit(
+          item?.unidad_medida || item?.unidad || item?.tipo_unidad || "ud",
+        );
+
+        return {
+          id:
+            item?.id || item?.tarifa_id || item?.idTarifa || `${unit}-${index}`,
+          unit,
+          precioColor: String(item?.precio_color ?? ""),
+          precioColorMasImp: String(item?.precio_color_mas_imp ?? ""),
+          precioImprimacion: String(item?.precio_imprimacion ?? ""),
+        };
+      })
+      .sort((a, b) => (order[a.unit] ?? 99) - (order[b.unit] ?? 99));
+  }, [tarifasPanelDraft, tarifasEstandar]);
+
+  const handleTarifaInputChange = (rowId, field, value) => {
+    setTarifasPanelDraft((prev) =>
+      (prev || []).map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              [field]: value,
+            }
+          : row,
+      ),
+    );
+  };
+
+  const handleEnableTarifaEdit = () => {
+    if (!Array.isArray(tarifasPanelDraft) || tarifasPanelDraft.length === 0) {
+      setTarifasPanelDraft(buildTarifasPanelRows(tarifasEstandar));
+    }
+    setIsModified(true);
+  };
+
+  const handleCloseTarifaPanel = () => {
+    setTarifasPanelDraft(buildTarifasPanelRows(tarifasEstandar));
+    setIsModified(false);
+    setShowPricePanel(false);
+  };
+
+  const handleSaveTarifaPanel = async () => {
+    const payloadTarifas = (tarifasPanelRows || []).map((row) => ({
+      id: row.id,
+      unidad: row.unit,
+      precio_color: row.precioColor,
+      precio_color_mas_imp: row.precioColorMasImp,
+      precio_imprimacion: row.precioImprimacion,
+    }));
+
+    try {
+      setIsSavingTarifas(true);
+      const result = await saveTarifasEstandar(API, payloadTarifas);
+      if (!result?.ok) {
+        throw new Error(
+          result?.data?.error || "No se pudieron guardar las tarifas.",
+        );
+      }
+
+      const refreshed = await fetchTarifasEstandar(API);
+      setTarifasEstandar(refreshed);
+      setTarifasPanelDraft(buildTarifasPanelRows(refreshed));
+      setIsModified(false);
+      toast.success("Tarifas guardadas correctamente.");
+      setShowPricePanel(false);
+    } catch (error) {
+      toast.error(error?.message || "Error al guardar las tarifas.");
+    } finally {
+      setIsSavingTarifas(false);
+    }
+  };
+
   const isFullyAdvanced =
     lineas.length > 0 &&
     lineas.every((l) => Number(l?.fabricacion_manual) === 1);
@@ -2130,7 +2752,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
             key={`bar-${normalizeOrderStatus(pedido.estado)}-${statusBarPedidoId}`}
             status={normalizeOrderStatus(pedido.estado)}
             onStatusChange={handleOrderStatusChange}
-            disabled={!isEditMode}
+            disabled={false}
             warningInfo={statusWarningInfo}
             isFullyAdvanced={isFullyAdvanced}
             className="order-status-inline"
@@ -2178,58 +2800,105 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                 </button>
                 {showPricePanel && (
                   <div className="price-presets-panel">
-                    <p>Precios rápidos por unidad</p>
-                    <label>
-                      € / Ud
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={priceDefaults.ud}
-                        onChange={(e) =>
-                          handlePriceDefaultChange("ud", e.target.value)
-                        }
-                      />
-                    </label>
-                    <label>
-                      € / ml
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={priceDefaults.ml}
-                        onChange={(e) =>
-                          handlePriceDefaultChange("ml", e.target.value)
-                        }
-                      />
-                    </label>
-                    <label>
-                      € / m²
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={priceDefaults.m2}
-                        onChange={(e) =>
-                          handlePriceDefaultChange("m2", e.target.value)
-                        }
-                      />
-                    </label>
+                    <p>Tarifas estándar por unidad</p>
+                    <div className="price-presets-top-actions">
+                      {!isModified && (
+                        <button
+                          type="button"
+                          className="tarifa-edit-btn"
+                          onClick={handleEnableTarifaEdit}
+                        >
+                          <FiEdit3 /> Editar Tarifas
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      className="price-presets-grid"
+                      role="table"
+                      aria-label="Tabla de tarifas por unidad"
+                    >
+                      <span className="grid-head">Unidad</span>
+                      <span className="grid-head">Precio color</span>
+                      <span className="grid-head">Total con IMP</span>
+                      <span className="grid-head">Precio imprimación</span>
+
+                      {tarifasPanelRows.length === 0 && (
+                        <span className="grid-empty">
+                          No hay tarifas cargadas desde api/tarifas_estandar.
+                        </span>
+                      )}
+
+                      {tarifasPanelRows.map((row) => (
+                        <Fragment key={row.id}>
+                          <span className="grid-unit">
+                            {row.unit === "m2" ? "m²" : row.unit}
+                          </span>
+                          <span className="grid-input-wrap">
+                            <input
+                              type="text"
+                              className={`tarifa-value-input ${isModified ? "is-editable" : "is-readonly"}`}
+                              readOnly={!isModified}
+                              value={row.precioColor}
+                              onChange={(e) =>
+                                handleTarifaInputChange(
+                                  row.id,
+                                  "precioColor",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </span>
+                          <span className="grid-input-wrap">
+                            <input
+                              type="text"
+                              className={`tarifa-value-input ${isModified ? "is-editable" : "is-readonly"}`}
+                              readOnly={!isModified}
+                              value={row.precioColorMasImp}
+                              onChange={(e) =>
+                                handleTarifaInputChange(
+                                  row.id,
+                                  "precioColorMasImp",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </span>
+                          <span className="grid-input-wrap">
+                            <input
+                              type="text"
+                              className={`tarifa-value-input ${isModified ? "is-editable" : "is-readonly"}`}
+                              readOnly={!isModified}
+                              value={row.precioImprimacion}
+                              onChange={(e) =>
+                                handleTarifaInputChange(
+                                  row.id,
+                                  "precioImprimacion",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </span>
+                        </Fragment>
+                      ))}
+                    </div>
                     <div className="price-presets-actions">
                       <button
                         type="button"
-                        onClick={() =>
-                          setPriceDefaults({ ud: 12, m2: 23.26, ml: 15.38 })
-                        }
+                        className="btn-secondary"
+                        onClick={handleCloseTarifaPanel}
                       >
-                        Restablecer
+                        Cerrar
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowPricePanel(false)}
-                      >
-                        Listo
-                      </button>
+                      {isModified && (
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          onClick={handleSaveTarifaPanel}
+                          disabled={isSavingTarifas}
+                        >
+                          {isSavingTarifas ? "Guardando..." : "Guardar"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2455,13 +3124,16 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                     onChange={handleNuevoClienteChange}
                   />
                 </div>
-                <div className="field-group">
+                <div
+                  className={`field-group ${nuevoClienteNifError ? "validation-focus-block" : ""}`}
+                >
                   <label>NIF</label>
                   <input
                     type="text"
                     name="Nif"
                     value={nuevoCliente.Nif}
                     onChange={handleNuevoClienteChange}
+                    className={nuevoClienteNifError ? "validation-focus" : ""}
                   />
                 </div>
                 <div className="field-group">
@@ -2521,21 +3193,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                 type="button"
                 className="bulk-manual-btn"
                 onClick={handleCompleteInsufficientManual}
-                disabled={stockAvailability.issues.length === 0}
-                title="Marcar como Hechas manualmente todas las líneas con stock insuficiente"
+                disabled={selectedLines.length === 0}
+                title="Completar manualmente las líneas seleccionadas"
               >
                 Completar producción manualmente
               </button>
-              {selectedLineIndexes.length > 0 && (
-                <button
-                  type="button"
-                  className="bulk-selected-btn"
-                  onClick={handleMarkSelectedManual}
-                >
-                  Marcar seleccionadas como Hechas ({selectedLineIndexes.length}
-                  )
-                </button>
-              )}
               {isEditMode && (
                 <button
                   type="button"
@@ -2708,6 +3370,19 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                       aria-invalid={isDraftIssueField("ral")}
                       data-draft-field="ral"
                     />
+                    <button
+                      type="button"
+                      className={`imp-toggle-btn ${draftMaterial.tiene_imprimacion ? "is-active" : ""}`}
+                      onClick={() =>
+                        handleDraftMaterialChange(
+                          "tiene_imprimacion",
+                          !draftMaterial.tiene_imprimacion,
+                        )
+                      }
+                      title="Aplicar imprimación"
+                    >
+                      IMP
+                    </button>
                     {shouldShowRalDot(
                       draftMaterial.Ral || draftMaterial.ral,
                     ) && (
@@ -2786,7 +3461,24 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                 (() => {
                   const stockIssue = stockIssueByLine.get(index);
                   const linea = material;
+                  const ralBaseText = getRalText(material);
+                  const hasImprimacion =
+                    material?.tiene_imprimacion === true ||
+                    material?.tiene_imprimacion === 1 ||
+                    material?.tiene_imprimacion === "1";
+                  const ralReadOnlyText = hasImprimacion
+                    ? ralBaseText && ralBaseText !== "-"
+                      ? `${ralBaseText} + IMP`
+                      : "IMP"
+                    : ralBaseText;
+                  const lineIdentifier = getLineIdentifier(linea);
+                  const isLineSelected = selectedLines.includes(lineIdentifier);
                   const isManual = Number(linea.fabricacion_manual) === 1;
+                  const canSelect =
+                    !isManual &&
+                    lineIdentifier !== null &&
+                    lineIdentifier !== undefined &&
+                    lineIdentifier !== "";
                   const hasStockIssue = Boolean(stockIssue) && !isManual;
                   const rowToneClass = isManual
                     ? "row-manual-success"
@@ -2794,7 +3486,16 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                       ? "row-error"
                       : "";
                   const stockTooltip = hasStockIssue
-                    ? `Stock actual: ${stockIssue.stock.toLocaleString("es-ES", { maximumFractionDigits: 2 })}kg | Necesario: ${stockIssue.required.toLocaleString("es-ES", { maximumFractionDigits: 2 })}kg`
+                    ? [
+                        stockIssue.missingRal > 0
+                          ? `Falta RAL: ${stockIssue.missingRal.toLocaleString("es-ES", { maximumFractionDigits: 2 })} kg`
+                          : null,
+                        stockIssue.missingImp > 0
+                          ? `Falta IMP: ${stockIssue.missingImp.toLocaleString("es-ES", { maximumFractionDigits: 2 })} kg`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")
                     : "";
 
                   return (
@@ -2807,8 +3508,9 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                           <input
                             type="checkbox"
                             className="line-selector-checkbox"
-                            checked={selectedLineIndexes.includes(index)}
-                            onChange={() => toggleLineSelection(index)}
+                            checked={selectedLines.includes(lineIdentifier)}
+                            onChange={() => toggleLineSelection(lineIdentifier)}
+                            disabled={!canSelect}
                             aria-label={`Seleccionar línea ${index + 1}`}
                           />
                         ) : (
@@ -3020,31 +3722,50 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                       </p>
                       <p className="ral-cell">
                         {isEditMode ? (
-                          <input
-                            list="ral-catalogo"
-                            className={`inline-line-input line-edit-field ${isIssueField(index, "ral") ? "validation-focus" : ""}`}
-                            type="text"
-                            value={material.Ral || material.ral || ""}
-                            disabled={isManual}
-                            onChange={(e) =>
-                              handleLineFieldChange(
-                                index,
-                                "ral",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="RAL"
-                            aria-invalid={isIssueField(index, "ral")}
-                            data-line-index={index}
-                            data-field="ral"
-                          />
+                          <>
+                            <input
+                              list="ral-catalogo"
+                              className={`inline-line-input line-edit-field ${isIssueField(index, "ral") ? "validation-focus" : ""}`}
+                              type="text"
+                              value={material.Ral || material.ral || ""}
+                              disabled={isManual}
+                              onChange={(e) =>
+                                handleLineFieldChange(
+                                  index,
+                                  "ral",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="RAL"
+                              aria-invalid={isIssueField(index, "ral")}
+                              data-line-index={index}
+                              data-field="ral"
+                            />
+                            <button
+                              type="button"
+                              className={`imp-toggle-btn ${material.tiene_imprimacion ? "is-active" : ""}`}
+                              disabled={isManual}
+                              onClick={() =>
+                                handleLineFieldChange(
+                                  index,
+                                  "tiene_imprimacion",
+                                  !material.tiene_imprimacion,
+                                )
+                              }
+                              title="Aplicar imprimación"
+                            >
+                              IMP
+                            </button>
+                          </>
                         ) : (
-                          <span
-                            className="ral-text"
-                            title={getRalText(material)}
-                            aria-label={getRalText(material)}
-                          >
-                            {getTruncatedRalText(getRalText(material), 12)}
+                          <span className="ral-readonly-wrap">
+                            <span
+                              className="ral-text"
+                              title={ralReadOnlyText}
+                              aria-label={ralReadOnlyText}
+                            >
+                              {getTruncatedRalText(ralReadOnlyText, 12)}
+                            </span>
                           </span>
                         )}
                         {shouldShowRalDot(getRalText(material)) && (
@@ -3136,11 +3857,16 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                           <>
                             <button
                               type="button"
-                              className="inline-line-btn manual-toggle"
+                              className={`inline-line-btn manual-toggle ${isLineSelected ? "is-selected" : ""}`}
                               onClick={() =>
-                                handleToggleFabricacionManual(index)
+                                toggleLineSelection(lineIdentifier)
                               }
-                              title="Marcar como Hecho manual"
+                              title={
+                                isLineSelected
+                                  ? "Quitar de seleccionadas"
+                                  : "Añadir a seleccionadas"
+                              }
+                              disabled={!canSelect}
                             >
                               <FiCheck />
                             </button>

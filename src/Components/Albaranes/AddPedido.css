@@ -83,7 +83,8 @@
   top: calc(100% + 8px);
   right: 0;
   z-index: 20;
-  width: 220px;
+  width: 520px;
+  max-width: min(92vw, 520px);
   border: 1px solid #ccdbe8;
   border-radius: 12px;
   background: #ffffff;
@@ -94,6 +95,19 @@
   gap: 8px;
 }
 
+.price-presets-grid .grid-empty {
+  grid-column: 1 / -1;
+  min-height: 32px;
+  border: 1px dashed #c8d8e6;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #55728a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.45rem;
+}
 .price-presets-panel p {
   margin: 0;
   font-size: 0.78rem;
@@ -101,23 +115,38 @@
   font-weight: 700;
 }
 
-.price-presets-panel label {
+.price-presets-top-actions {
   display: flex;
+  justify-content: flex-end;
+}
+
+.tarifa-edit-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: #4a667c;
-  font-size: 0.76rem;
+  gap: 6px;
+  border: 1px solid #bfd0df;
+  background: #ffffff;
+  color: #215777;
+  border-radius: 8px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tarifa-edit-btn:hover {
+  background: #edf5fb;
 }
 
 .price-presets-panel input {
-  width: 95px;
+  width: 100%;
   height: 30px;
   border: 1px solid #ccdae5;
   border-radius: 8px;
   background: #f7fbff;
   color: #1f4662;
   padding: 0.2rem 0.45rem;
+  box-sizing: border-box;
 }
 
 .price-presets-panel input:focus {
@@ -129,6 +158,89 @@
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+.price-presets-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(52px, 0.7fr) minmax(110px, 1fr) minmax(120px, 1fr)
+    minmax(130px, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.price-presets-grid .grid-head {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4a667c;
+  padding-bottom: 2px;
+}
+
+.price-presets-grid .grid-unit {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #215777;
+}
+
+.price-presets-grid .grid-cell {
+  min-height: 30px;
+  border: 1px solid #d6e3ed;
+  background: #f7fbff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.45rem;
+  color: #1f4662;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.price-presets-grid .grid-input-wrap {
+  min-height: 30px;
+}
+
+.tarifa-value-input {
+  width: 100%;
+  height: 30px;
+  border-radius: 8px;
+  padding: 0.2rem 0.45rem;
+  box-sizing: border-box;
+  color: #1f4662;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.tarifa-value-input.is-readonly {
+  border: 1px solid #dbe5ee;
+  background: #f4f7fa;
+  cursor: default;
+}
+
+.tarifa-value-input.is-editable {
+  border: 1px solid #ccdae5;
+  background: #ffffff;
+}
+
+.tarifa-value-input.is-editable:focus {
+  outline: 2px solid rgba(42, 111, 154, 0.2);
+  border-color: #2d6f9a;
+}
+
+.price-presets-actions .btn-secondary {
+  border: 1px solid #bfd0df;
+  background: #ffffff;
+  color: #215777;
+}
+
+.price-presets-actions .btn-primary {
+  border: 1px solid #1f5f86;
+  background: #1f5f86;
+  color: #ffffff;
+}
+
+.price-presets-actions .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .price-presets-actions button {
@@ -1361,6 +1473,32 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.imp-toggle-btn {
+  border: 1px solid #b9cad8;
+  background: #f8fbff;
+  color: #2a5c7c;
+  border-radius: 8px;
+  padding: 0.16rem 0.38rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.imp-toggle-btn:hover {
+  background: #edf5fb;
+}
+
+.imp-toggle-btn.is-active {
+  border-color: #3b6f27;
+  background: #edf8e8;
+  color: #2b5b1c;
+}
+
+.imp-toggle-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .ral-text {

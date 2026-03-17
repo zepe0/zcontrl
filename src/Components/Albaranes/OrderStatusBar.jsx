@@ -26,6 +26,35 @@ function OrderStatusBar({
   const [errorMessage, setErrorMessage] = useState("");
   const currentStatus = normalizeOrderStatus(status);
 
+  const normalizeToken = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const isPendingColorWarning = useMemo(() => {
+    if (!warningInfo) return false;
+
+    if (warningInfo?.reason === "pending-color") {
+      return true;
+    }
+
+    const pendingTokens = ["pendiente", "sin especificar", "sinespecificar"];
+
+    const hasPendingRal = (warningInfo?.missingRals || []).some((value) => {
+      const token = normalizeToken(value);
+      return pendingTokens.includes(token);
+    });
+
+    if (hasPendingRal) return true;
+
+    const warningText = normalizeToken(warningInfo?.message || "");
+    return (
+      warningText.includes("asignar") || warningText.includes("color pendiente")
+    );
+  }, [warningInfo]);
+
   const currentIndex = useMemo(
     () => ORDER_STATUS_STEPS.indexOf(currentStatus),
     [currentStatus],
@@ -105,9 +134,11 @@ function OrderStatusBar({
             step === "Pendiente" && (isPendingCurrent || hasWarning);
 
           const warningTooltip = hasWarning
-            ? warningInfo?.missingRals?.length
-              ? `Falta stock: ${warningInfo.missingRals.join(", ")}`
-              : warningInfo.message || "Falta stock para este estado."
+            ? isPendingColorWarning
+              ? "Pendiente de asignar color"
+              : warningInfo?.missingRals?.length
+                ? `Falta stock: ${warningInfo.missingRals.join(", ")}`
+                : warningInfo.message || "Falta stock para este estado."
             : labelMap[step];
 
           return (
@@ -138,16 +169,24 @@ function OrderStatusBar({
       {warningInfo?.message && (
         <div className="order-status-persistent-alert" role="status">
           <span className="order-status-persistent-text">
-            Falta stock de:{" "}
-            {warningInfo.missingRals?.join(", ") || "materiales"}
+            {isPendingColorWarning
+              ? "Pendiente: Asignar color"
+              : `Falta stock de: ${warningInfo.missingRals?.join(", ") || "materiales"}`}
           </span>
-          <button
-            type="button"
-            className="order-status-inventory-btn"
-            onClick={onViewInventory}
-          >
-            Ver Inventario
-          </button>
+          {!isPendingColorWarning && (
+            <a
+              className="order-status-inventory-btn"
+              href="/zcontrol/#/Materiales"
+              onClick={(event) => {
+                if (typeof onViewInventory === "function") {
+                  event.preventDefault();
+                  onViewInventory();
+                }
+              }}
+            >
+              Ver Inventario
+            </a>
+          )}
         </div>
       )}
 

@@ -3,6 +3,28 @@ import { FiAlertTriangle, FiDroplet } from "react-icons/fi";
 function LisatPintura({ pinturas, hasSearchQuery = false }) {
   const safePinturas = Array.isArray(pinturas) ? pinturas : [];
 
+  const normalizeToken = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const isWildcardPintura = (pintura) => {
+    const values = [
+      pintura?.nombre,
+      pintura?.ral,
+      pintura?.marca,
+      pintura?.id,
+      pintura?.idPintura,
+    ];
+
+    return values.some((value) => {
+      const token = normalizeToken(value);
+      return token === "pendiente" || token === "sistema";
+    });
+  };
+
   const isPlaceholderPintura = (pintura) => {
     const id = String(pintura?.id || "")
       .trim()
@@ -13,8 +35,16 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
     return id === "REFNONE" || ral === "SIN ESPECIFICAR";
   };
 
+  const getRalClassToken = (ralValue) => {
+    const digits = String(ralValue || "").replace(/\D+/g, "");
+    return digits.slice(0, 4);
+  };
+
+  const isImprimacionRal = (ralValue) =>
+    normalizeToken(ralValue) === "imprimacion";
+
   const pinturasFiltradas = safePinturas.filter(
-    (pintura) => !isPlaceholderPintura(pintura),
+    (pintura) => !isPlaceholderPintura(pintura) && !isWildcardPintura(pintura),
   );
 
   const maxStock = Math.max(
@@ -30,10 +60,39 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
           const percent = Math.max(0, Math.min(100, (stock / maxStock) * 100));
           const isCritical = stock < 5;
           const isNegative = stock < 0;
+          const ralToken = getRalClassToken(pintura.ral);
+          const isImprimacion = isImprimacionRal(pintura.ral);
 
           return (
             <ul className="paint-row" key={pintura.id}>
-              <li className={`RAL-${pintura.ral} circuloRal`}></li>
+              <li
+                className={
+                  isImprimacion
+                    ? "circuloRal"
+                    : ralToken
+                      ? `RAL-${ralToken} circuloRal`
+                      : "circuloRal"
+                }
+                style={
+                  isImprimacion
+                    ? {
+                        background:
+                          "radial-gradient(circle at 30% 30%, #ffffff 0%, #9fc5e8 45%, #1f5f86 100%)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
+                title={
+                  isImprimacion ? "Imprimación" : String(pintura.ral || "")
+                }
+              >
+                {isImprimacion ? (
+                  <FiDroplet size={11} aria-hidden="true" />
+                ) : null}
+              </li>
 
               <li
                 className={`alingl ${isCritical ? "stock-critical" : ""} ${isNegative ? "stock-negative" : ""}`}
