@@ -1,0 +1,499 @@
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Container */
+.historial-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 98%;
+  max-width: 1600px;
+  height: 90vh;
+  margin: 2vh auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #dbe4ee;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.trend-badge strong {
+  font-size: 0.67rem;
+  font-weight: 700;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trend-up {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.trend-down {
+  color: #7f1d1d;
+  background: #fee2e2;
+}
+
+.trend-neutral {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #0f172a;
+}
+
+/* Modal Content */
+.modal-content-historial {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8fafc;
+  padding: 24px;
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  gap: 24px;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.resumen-cards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.resumen-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.resumen-label {
+  display: block;
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.resumen-card strong {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+/* Gráfica Section */
+.grafica-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.grafica-section h3 {
+  margin: 0;
+  font-size: 1.06rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.metricas-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.metricas-inline span {
+  font-size: 0.75rem;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.chart-wrap {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 8px 4px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Tabla Section */
+.tabla-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.tabla-section h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.tabla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tabla-header h3 {
+  margin: 0;
+}
+
+/* Botón Exportar Excel */
+.btn-export {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+
+.btn-export:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
+.btn-export-loading {
+  background: #0f766e;
+  cursor: wait;
+}
+
+.btn-export-success {
+  background: #16a34a;
+}
+
+/* Tabla Scroll Container */
+.tabla-scroll {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.tabla-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tabla-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* Tabla Styles */
+.historial-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.historial-table thead {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.historial-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.historial-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.th-precio,
+.precio-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.historial-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.historial-table tbody tr:nth-child(even) {
+  background-color: #fcfcfc;
+}
+
+.precio-cell {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.proveedor-cell {
+  font-style: italic;
+  color: #64748b;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 1.8fr 1fr;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .dashboard-centered {
+    justify-items: stretch;
+  }
+
+  .grafica-section,
+  .tabla-section {
+    margin: 0;
+  }
+
+  .tabla-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .tabla-scroll {
+    flex: 1;
+    max-height: 58vh;
+    min-height: 300px;
+  }
+}
+
+/* No Data */
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .historial-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-title-wrap {
+    flex-wrap: wrap;
+  }
+
+  .resumen-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-content-historial {
+    padding: 16px 20px;
+  }
+
+  .dashboard-layout {
+    overflow-y: auto;
+  }
+
+  .grafica-section,
+  .tabla-section {
+    padding: 14px;
+  }
+
+  .tabla-scroll {
+    max-height: 300px;
+  }
+
+  .tabla-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-export {
+    width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* PREMIUM RECHARTS BRUSH STYLING */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.recharts-brush {
+  padding-top: 8px;
+}
+
+/* Fondo del brush - área de referencia */
+.recharts-brush-slide {
+  background: linear-gradient(180deg, #f0f4ff 0%, #f8fafc 100%) !important;
+  border: 1px solid #dbe4ee !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Rectángulo seleccionado del brush */
+.recharts-brush-slide-rect {
+  fill: #2563eb !important;
+  opacity: 0.25 !important;
+}
+
+/* Controles de arrastre (travelers) - estilos avanzados */
+.recharts-brush-traveller {
+  fill: #2563eb !important;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3)) !important;
+  cursor: grab !important;
+  transition: all 0.2s ease !important;
+}
+
+.recharts-brush-traveller:hover {
+  fill: #1d4ed8 !important;
+  filter: drop-shadow(0 4px 8px rgba(37, 99, 235, 0.4)) !important;
+}
+
+.recharts-brush-traveller:active {
+  cursor: grabbing !important;
+  fill: #1e40af !important;
+}
+
+/* Líneas verticales de los controles */
+.recharts-brush-traveller rect {
+  fill: #2563eb !important;
+  rx: 3 !important;
+  ry: 3 !important;
+}
+
+/* Línea de separación entre brush y gráfica */
+.recharts-brush-slide line {
+  stroke: #dbe4ee !important;
+  stroke-width: 1 !important;
+}

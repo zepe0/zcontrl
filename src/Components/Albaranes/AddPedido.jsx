@@ -12,6 +12,7 @@ import ClienteSearch from "../Clientes/ClienteSearch";
 import UploadPedidoFile from "./UploadPedidoFile";
 import ReviewPedidoData from "./ReviewPedidoData";
 import OrderStatusBar from "./OrderStatusBar";
+import AlbaranTrabajoPrint from "./AlbaranTrabajoPrint";
 import { normalizeOrderStatus } from "./logic/orderStatusFlow";
 import {
   calculatePaintConsumption,
@@ -1670,7 +1671,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     selectableLineIds.every((id) => selectedLines.includes(id));
 
   const handleViewInventory = () => {
-    window.location.href = "/zcontrol/#/Materiales";
+    window.location.href = "/zcontrol/#/Pinturas";
   };
 
   const toggleLineSelection = (lineId) => {
@@ -2413,9 +2414,65 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const iva = totals.base * 0.21;
   const total = totals.base + iva;
 
-  const printTrabajo = () => {
-    setPrintMode("logistico");
-    setTimeout(() => window.print(), 40);
+  const handlePrintTrabajo = () => {
+    const printArea = document.getElementById("print-area-trabajo");
+    if (!printArea) {
+      toast.error("No se pudo preparar la impresión de trabajo.");
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.setAttribute("aria-hidden", "true");
+    document.body.appendChild(iframe);
+
+    const content = printArea.innerHTML;
+    const styles = Array.from(
+      document.querySelectorAll('style, link[rel="stylesheet"]'),
+    )
+      .map((styleTag) => styleTag.outerHTML)
+      .join("\n");
+
+    const title =
+      pedido?.pedido_id || pedido?.numAlbaran || numeroAlbaran || "Pedido";
+    const iframeDoc = iframe.contentDocument;
+
+    if (!iframeDoc) {
+      iframe.remove();
+      toast.error("No se pudo abrir el documento de impresión.");
+      return;
+    }
+
+    iframeDoc.open();
+    iframeDoc.write(`
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Orden de Trabajo - ${title}</title>
+          ${styles}
+        </head>
+        <body>
+          ${content}
+          <script>
+            window.onload = () => {
+              window.focus();
+              window.print();
+              setTimeout(() => {
+                if (window.frameElement) {
+                  window.frameElement.remove();
+                }
+              }, 120);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
   };
 
   const printValorado = () => {
@@ -2741,7 +2798,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   return (
-    <section id="addPedidoSection">
+    <section
+      id="addPedidoSection"
+      className={printMode === "logistico" ? "trabajo-print-active" : ""}
+    >
       <dialog id="addPedido" className="add-pedido-modal">
         <div className={`add-pedido-header ${isValued ? "valued-header" : ""}`}>
           <div className="pedido-id-box">
@@ -2772,7 +2832,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
               <button
                 type="button"
                 className="icon-action-btn btn-print"
-                onClick={printTrabajo}
+                onClick={handlePrintTrabajo}
                 title="Imprimir trabajo"
                 aria-label="Imprimir trabajo"
               >
@@ -3949,6 +4009,16 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           onCancel={handleReviewCancel}
         />
       )}
+      <div id="print-area-trabajo" style={{ display: "none" }}>
+        <AlbaranTrabajoPrint
+          pedido={pedido}
+          cliente={pedido?.cliente}
+          lineas={lineas}
+          numeroAlbaran={numeroAlbaran}
+          observaciones={pedido?.observaciones}
+          stockIssueByLine={stockIssueByLine}
+        />
+      </div>
     </section>
   );
 }

@@ -744,8 +744,7 @@
 .RAL-5007 {
   background-color: #3e5f8a;
 }
-.RAL-5006
- {
+.RAL-5006 {
   background-color: #3e5f8a;
 }
 .RAL-5008 {
@@ -1087,4 +1086,93 @@
 }
 .yellow {
   color: rgb(190, 120, 15);
+}
+/* Color por defecto si no encuentra el RAL */
+.ral-default {
+  background: linear-gradient(
+    45deg,
+    #ccc 25%,
+    #bbb 25%,
+    #bbb 50%,
+    #ccc 50%,
+    #ccc 75%,
+    #bbb 75%,
+    #bbb 100%
+  );
+  background-size: 10px 10px; /* Un patrón rayado sutil que indica "Sin color definido" */
+}
+
+/* Imprimación: Un gris técnico neutro */
+.ral-imprimacion {
+  background-color: #7f8c8d;
+  position: relative;
+}
+
+/* Oxidón: Efecto rugoso */
+.ral-oxidon {
+  background-color: #4a4a4a;
+  background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png"); /* Textura sutil */
+}
+
+/* Variantes de acabado (Gofrados/Mates) */
+/* Si es gofrado, podemos añadir un brillo diferente con un overlay */
+.gofrado-overlay {
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.mate-overlay {
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 80%
+  );
+  filter: contrast(95%) brightness(95%);
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Animación de reflejo metalizado ─────────────────── */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-25deg);
+  }
+}
+
+.RAL-9006,
+.RAL-9007,
+.RAL-9022,
+.RAL-9023 {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.RAL-9006::before,
+.RAL-9007::before,
+.RAL-9022::before,
+.RAL-9023::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: translateX(-150%) skewX(-25deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pintura-card-modern:hover .RAL-9006::before,
+.pintura-card-modern:hover .RAL-9007::before,
+.pintura-card-modern:hover .RAL-9022::before,
+.pintura-card-modern:hover .RAL-9023::before {
+  animation: shimmer 1.2s ease-in-out infinite;
 }

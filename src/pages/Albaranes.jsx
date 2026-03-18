@@ -103,7 +103,7 @@ function Albaranes() {
     <section className="home">
       <Nav className="nav" />
 
-      <div className="cuerpo">
+      <div className= "p-40 m-90 *">
         <div className="listaalbaranes">
           <h2>Albaranes</h2>
 

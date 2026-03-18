@@ -176,7 +176,7 @@ function OrderStatusBar({
           {!isPendingColorWarning && (
             <a
               className="order-status-inventory-btn"
-              href="/zcontrol/#/Materiales"
+              href="/zcontrol/#/Pinturas"
               onClick={(event) => {
                 if (typeof onViewInventory === "function") {
                   event.preventDefault();
