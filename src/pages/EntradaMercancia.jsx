@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiBox, FiPackage, FiPlus, FiSearch, FiTrash2, FiTruck, FiX } from "react-icons/fi";
+import {
+  FiBox,
+  FiPackage,
+  FiPlus,
+  FiSearch,
+  FiTrash2,
+  FiTruck,
+  FiX,
+} from "react-icons/fi";
 import { toast } from "react-toastify";
 import "./EntradaMercancia.css";
 import { parseRalString } from "../Components/Pinturas/logic/parseRal";
@@ -57,14 +65,14 @@ function EntradaMercancia({ isOpen, onClose }) {
       const parsed = parseRalString(search);
       if (parsed.ral) {
         // Verificar que no exista ya
-        const yaExiste = pinturas.some(p => String(p?.ral) === parsed.ral);
+        const yaExiste = pinturas.some((p) => String(p?.ral) === parsed.ral);
         if (!yaExiste) {
           setShowCreateOption({
             parsed,
             datosNuevaPintura: {
               ral: parsed.ral,
-              marca: parsed.marca || '',
-            }
+              marca: parsed.marca || "",
+            },
           });
         }
       }
@@ -79,7 +87,9 @@ function EntradaMercancia({ isOpen, onClose }) {
     const pinturaId = String(pintura?.id || "");
     if (!pinturaId) return;
 
-    const yaExiste = lineas.some((linea) => String(linea.pintura_id) === pinturaId);
+    const yaExiste = lineas.some(
+      (linea) => String(linea.pintura_id) === pinturaId,
+    );
     if (yaExiste) {
       toast.info("Esa pintura ya esta en el albaran");
       return;
@@ -112,31 +122,34 @@ function EntradaMercancia({ isOpen, onClose }) {
     setIsCreatingPintura(true);
     try {
       const result = await createNewPintura(showCreateOption.datosNuevaPintura);
-      
+
       if (!result.success) {
         throw new Error(result.error);
       }
 
       const nuevaPintura = result.pintura;
-      
+
       // Asegurar que la pintura tenga todos los datos necesarios
       const pinturaProcesada = {
-        id: nuevaPintura.id || nuevaPintura.id_pintura || nuevaPintura.pinturaId,
+        id:
+          nuevaPintura.id || nuevaPintura.id_pintura || nuevaPintura.pinturaId,
         ral: nuevaPintura.ral || showCreateOption.datosNuevaPintura.ral,
         marca: nuevaPintura.marca || showCreateOption.datosNuevaPintura.marca,
-        refpintura: nuevaPintura.refpintura || '',
+        refpintura: nuevaPintura.refpintura || "",
         stock_actual: nuevaPintura.stock_actual || 0,
         precio_referencia: nuevaPintura.precio_referencia || 0,
-        ...nuevaPintura
+        ...nuevaPintura,
       };
-      
+
       // Agregar la nueva pintura al catálogo
-      setPinturas(prev => [...prev, pinturaProcesada]);
-      
+      setPinturas((prev) => [...prev, pinturaProcesada]);
+
       // Agregar como línea al albarán
       addLinea(pinturaProcesada);
-      
-      toast.success(`Pintura "RAL ${pinturaProcesada.ral}" creada y añadida al albarán`);
+
+      toast.success(
+        `Pintura "RAL ${pinturaProcesada.ral}" creada y añadida al albarán`,
+      );
       setShowCreateOption(null);
       setSearch("");
     } catch (error) {
@@ -219,7 +232,9 @@ function EntradaMercancia({ isOpen, onClose }) {
         precio_total: Number(linea.precioTotal.toFixed(2)),
         precio_total_caja:
           toNumber(linea.cantidad_cajas) > 0
-            ? Number((linea.precioTotal / toNumber(linea.cantidad_cajas)).toFixed(2))
+            ? Number(
+                (linea.precioTotal / toNumber(linea.cantidad_cajas)).toFixed(2),
+              )
             : null,
         precio_kg_calculado:
           linea.totalKg > 0 ? Number(linea.precioKg.toFixed(2)) : null,
@@ -270,7 +285,8 @@ function EntradaMercancia({ isOpen, onClose }) {
           <div>
             <h1>Entrada de Mercancia</h1>
             <p>
-              Carga rapida de lineas para un albaran completo en una sola operacion.
+              Carga rapida de lineas para un albaran completo en una sola
+              operacion.
             </p>
           </div>
           <div className="entrada-kpis" aria-label="Resumen albaran">
@@ -289,8 +305,13 @@ function EntradaMercancia({ isOpen, onClose }) {
           </div>
         </header>
 
-        <section className="entrada-search-card" aria-label="Buscador rapido de pinturas">
-          <label htmlFor="entrada-search">Buscar pintura por RAL, marca o referencia</label>
+        <section
+          className="entrada-search-card"
+          aria-label="Buscador rapido de pinturas"
+        >
+          <label htmlFor="entrada-search">
+            Buscar pintura por RAL, marca o referencia
+          </label>
           <div className="entrada-search-control">
             <FiSearch />
             <input
@@ -322,24 +343,29 @@ function EntradaMercancia({ isOpen, onClose }) {
                   ))}
                 </ul>
               )}
-              
+
               {resultados.length === 0 && showCreateOption && (
                 <div className="entrada-create-option">
                   <div className="create-option-content">
                     <div className="create-option-info">
-                      <p className="create-option-title">Pintura no encontrada</p>
+                      <p className="create-option-title">
+                        Pintura no encontrada
+                      </p>
                       <p className="create-option-details">
-                        <strong>RAL:</strong> {showCreateOption.datosNuevaPintura.ral}
+                        <strong>RAL:</strong>{" "}
+                        {showCreateOption.datosNuevaPintura.ral}
                         {showCreateOption.parsed.acabado && (
                           <>
                             <br />
-                            <strong>Acabado:</strong> {showCreateOption.parsed.acabado}
+                            <strong>Acabado:</strong>{" "}
+                            {showCreateOption.parsed.acabado}
                           </>
                         )}
                         {showCreateOption.datosNuevaPintura.marca && (
                           <>
                             <br />
-                            <strong>Marca:</strong> {showCreateOption.datosNuevaPintura.marca}
+                            <strong>Marca:</strong>{" "}
+                            {showCreateOption.datosNuevaPintura.marca}
                           </>
                         )}
                       </p>
@@ -395,7 +421,11 @@ function EntradaMercancia({ isOpen, onClose }) {
                           type="text"
                           value={linea.proveedor}
                           onChange={(e) =>
-                            updateLinea(linea.rowId, "proveedor", e.target.value)
+                            updateLinea(
+                              linea.rowId,
+                              "proveedor",
+                              e.target.value,
+                            )
                           }
                           placeholder="Proveedor"
                         />
@@ -409,7 +439,11 @@ function EntradaMercancia({ isOpen, onClose }) {
                             step="1"
                             value={linea.cantidad_cajas}
                             onChange={(e) =>
-                              updateLinea(linea.rowId, "cantidad_cajas", e.target.value)
+                              updateLinea(
+                                linea.rowId,
+                                "cantidad_cajas",
+                                e.target.value,
+                              )
                             }
                           />
                           <span className="times">x</span>
@@ -420,7 +454,11 @@ function EntradaMercancia({ isOpen, onClose }) {
                             step="0.01"
                             value={linea.formato_kg}
                             onChange={(e) =>
-                              updateLinea(linea.rowId, "formato_kg", e.target.value)
+                              updateLinea(
+                                linea.rowId,
+                                "formato_kg",
+                                e.target.value,
+                              )
                             }
                           />
                         </div>
@@ -434,13 +472,19 @@ function EntradaMercancia({ isOpen, onClose }) {
                           step="0.01"
                           value={linea.precio_total}
                           onChange={(e) =>
-                            updateLinea(linea.rowId, "precio_total", e.target.value)
+                            updateLinea(
+                              linea.rowId,
+                              "precio_total",
+                              e.target.value,
+                            )
                           }
                           placeholder="0.00"
                         />
                       </td>
                       <td className="numeric strong">
-                        {linea.precioKg > 0 ? `${linea.precioKg.toFixed(2)} EUR/kg` : "-"}
+                        {linea.precioKg > 0
+                          ? `${linea.precioKg.toFixed(2)} EUR/kg`
+                          : "-"}
                       </td>
                       <td>
                         <button
@@ -461,7 +505,8 @@ function EntradaMercancia({ isOpen, onClose }) {
 
           <footer className="entrada-footer">
             <p>
-              Revisa los precios por kg antes de confirmar para detectar errores del albaran.
+              Revisa los precios por kg antes de confirmar para detectar errores
+              del albaran.
             </p>
             <button
               type="button"
