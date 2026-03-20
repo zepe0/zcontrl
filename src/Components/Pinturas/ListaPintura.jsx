@@ -21,7 +21,12 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
 
     return values.some((value) => {
       const token = normalizeToken(value);
-      return token === "pendiente" || token === "sistema";
+      return (
+        token === "pendiente" ||
+        token === "sin color" ||
+        token === "sincolor" ||
+        token === "sistema"
+      );
     });
   };
 
@@ -39,6 +44,8 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
     const digits = String(ralValue || "").replace(/\D+/g, "");
     return digits.slice(0, 4);
   };
+
+  const isNoirRal = (ralValue) => normalizeToken(ralValue).startsWith("noir");
 
   const isImprimacionRal = (ralValue) =>
     normalizeToken(ralValue) === "imprimacion";
@@ -62,6 +69,7 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
           const isNegative = stock < 0;
           const ralToken = getRalClassToken(pintura.ral);
           const isImprimacion = isImprimacionRal(pintura.ral);
+          const isNoir = isNoirRal(pintura.ral);
 
           return (
             <ul className="paint-row" key={pintura.id}>
@@ -69,9 +77,11 @@ function LisatPintura({ pinturas, hasSearchQuery = false }) {
                 className={
                   isImprimacion
                     ? "circuloRal"
-                    : ralToken
-                      ? `RAL-${ralToken} circuloRal`
-                      : "circuloRal"
+                    : isNoir
+                      ? "ral-noir circuloRal"
+                      : ralToken
+                        ? `RAL-${ralToken} circuloRal`
+                        : "circuloRal"
                 }
                 style={
                   isImprimacion

@@ -23,8 +23,9 @@ import {
   resolveLineRequiredStock,
 } from "./logic/calculosPedido";
 import {
+  actualizarCliente,
   completeLineasManualBatch,
-  crearAlbaran,
+  crearAlbaranTransaccional,
   crearCliente,
   fetchCatalogoMateriales,
   fetchCatalogoPinturas,
@@ -161,6 +162,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
   const [pedido, setPedido] = useState({
     numAlbaran: "",
+    clienteId: "",
     cliente: "",
     Nif: "",
     tel: "",
@@ -339,6 +341,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         ...prevPedido,
         numAlbaran: numero,
         id: pedidoData?.id || pedidoData?.pedido_id || numero,
+        clienteId: cliente.id || pedidoData?.cliente_id || "",
         cliente: cliente.nombre || "",
         Nif: cliente.Nif || cliente.nif || "",
         tel: cliente.tel || "",
@@ -482,6 +485,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     setIsEditingCliente(false);
     setPedido((prevPedido) => ({
       ...prevPedido,
+      clienteId: cliente.id || "",
       cliente: cliente.nombre,
       Nif: cliente.Nif || cliente.nif || "",
       tel: cliente.tel,
@@ -539,16 +543,18 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   const guardarNuevoCliente = async (nuevoClienteData) => {
-    await crearCliente(API, nuevoClienteData);
+    const data = await crearCliente(API, nuevoClienteData);
+    const clienteCreado = data?.cliente || nuevoClienteData;
 
     // Actualiza la lista de clientes y selecciona automáticamente el nuevo cliente
-    setClientes((prevClientes) => [...prevClientes, nuevoClienteData]);
+    setClientes((prevClientes) => [...prevClientes, clienteCreado]);
     setPedido((prevPedido) => ({
       ...prevPedido,
-      cliente: nuevoClienteData.nombre,
-      tel: nuevoClienteData.tel,
-      dir: nuevoClienteData.dir,
-      Nif: nuevoClienteData.Nif,
+      clienteId: clienteCreado.id || "",
+      cliente: clienteCreado.nombre,
+      tel: clienteCreado.tel,
+      dir: clienteCreado.dir,
+      Nif: clienteCreado.Nif,
     }));
     setClienteActualizado((prev) => prev + 1);
   };
@@ -558,10 +564,60 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     setIsAddingCliente(true); // Activa el modo de agregar cliente
   };
 
-  const handleSaveClienteEdicion = () => {
-    setIsEditingCliente(false);
-    setClienteSavedFlash(true);
-    setTimeout(() => setClienteSavedFlash(false), 2000);
+  const handleSaveClienteEdicion = async () => {
+    if (!String(pedido?.cliente || "").trim()) {
+      toast.error("El nombre del cliente es obligatorio");
+      return;
+    }
+
+    if (!String(pedido?.Nif || "").trim()) {
+      toast.error("El NIF del cliente es obligatorio");
+      return;
+    }
+
+    if (!String(pedido?.clienteId || "").trim()) {
+      toast.error("Selecciona o crea un cliente antes de editarlo");
+      return;
+    }
+
+    try {
+      const data = await actualizarCliente(API, pedido.clienteId, {
+        nombre: pedido.cliente,
+        Nif: pedido.Nif,
+        tel: pedido.tel,
+        dir: pedido.dir,
+      });
+
+      const clienteActualizadoData = data?.cliente || {
+        id: pedido.clienteId,
+        nombre: pedido.cliente,
+        Nif: pedido.Nif,
+        tel: pedido.tel,
+        dir: pedido.dir,
+      };
+
+      setClientes((prevClientes) =>
+        prevClientes.map((cliente) =>
+          cliente.id === clienteActualizadoData.id
+            ? { ...cliente, ...clienteActualizadoData }
+            : cliente,
+        ),
+      );
+
+      setPedido((prevPedido) => ({
+        ...prevPedido,
+        cliente: clienteActualizadoData.nombre,
+        Nif: clienteActualizadoData.Nif,
+        tel: clienteActualizadoData.tel,
+        dir: clienteActualizadoData.dir,
+      }));
+
+      setIsEditingCliente(false);
+      setClienteSavedFlash(true);
+      setTimeout(() => setClienteSavedFlash(false), 2000);
+    } catch (error) {
+      toast.error(error.message || "Error al actualizar el cliente");
+    }
   };
 
   const handleNuevoClienteChange = (e) => {
@@ -926,7 +982,12 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const isWildcardPaintToken = useCallback(
     (value) => {
       const token = normalizeToken(value);
-      return token === "pendiente" || token === "sistema";
+      return (
+        token === "pendiente" ||
+        token === "sin color" ||
+        token === "sincolor" ||
+        token === "sistema"
+      );
     },
     [normalizeToken],
   );
@@ -961,7 +1022,14 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const hasValidRal = useCallback(
     (value) => {
       const token = normalizeToken(value);
-      return Boolean(token) && token !== "-" && token !== "sin especificar";
+      return (
+        Boolean(token) &&
+        token !== "-" &&
+        token !== "sin especificar" &&
+        token !== "sin color" &&
+        token !== "sincolor" &&
+        token !== "pendiente"
+      );
     },
     [normalizeToken],
   );
@@ -1201,14 +1269,49 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
+    const blockedByStock =
+      nextManual === true
+        ? changes.filter((item) => {
+            if (hasPendingColorOnLine(item.line)) return false;
+            return Boolean(stockIssueByLine.get(item.index));
+          })
+        : [];
+
+    if (blockedByStock.length > 0) {
+      const blockedRals = [
+        ...new Set(
+          blockedByStock
+            .map((item) =>
+              String(item?.line?.Ral || item?.line?.ral || "").trim(),
+            )
+            .filter(Boolean),
+        ),
+      ];
+
+      toast.warning(
+        blockedRals.length > 0
+          ? `No se puede marcar como Hecho manual por falta de stock: ${blockedRals.slice(0, 4).join(", ")}.`
+          : "No se puede marcar como Hecho manual por falta de stock.",
+      );
+    }
+
+    const candidateChanges =
+      blockedByStock.length > 0
+        ? changes.filter((item) => !blockedByStock.includes(item))
+        : changes;
+
+    if (candidateChanges.length === 0) {
+      return;
+    }
+
     const persisted = await Promise.all(
-      changes.map((item) =>
+      candidateChanges.map((item) =>
         persistLineManualState(item.line, item.nextManual, item.nextDate),
       ),
     );
 
-    const successfulChanges = changes.filter((_, i) => persisted[i]);
-    const failedCount = changes.length - successfulChanges.length;
+    const successfulChanges = candidateChanges.filter((_, i) => persisted[i]);
+    const failedCount = candidateChanges.length - successfulChanges.length;
 
     successfulChanges.forEach((item) => {
       applyManualLineState(item.index, item.nextManual, item.nextDate);
@@ -1701,8 +1804,48 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
+    const baseLines = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
+    const byId = new Map(
+      baseLines
+        .map((linea, index) => [getLineIdentifier(linea), { linea, index }])
+        .filter(([id]) => id !== null && id !== undefined && id !== ""),
+    );
+
+    const blockedByStock = selectedLines.filter((lineId) => {
+      const entry = byId.get(lineId);
+      if (!entry) return false;
+      if (hasPendingColorOnLine(entry.linea)) return false;
+      return Boolean(stockIssueByLine.get(entry.index));
+    });
+
+    const allowedLines = selectedLines.filter(
+      (lineId) => !blockedByStock.includes(lineId),
+    );
+
+    if (blockedByStock.length > 0) {
+      const blockedRals = [
+        ...new Set(
+          blockedByStock
+            .map((lineId) => byId.get(lineId)?.linea)
+            .filter(Boolean)
+            .map((linea) => String(linea?.Ral || linea?.ral || "").trim())
+            .filter(Boolean),
+        ),
+      ];
+
+      toast.warning(
+        blockedRals.length > 0
+          ? `No se puede marcar como Hecho manual por falta de stock: ${blockedRals.slice(0, 4).join(", ")}.`
+          : "No se puede marcar como Hecho manual por falta de stock.",
+      );
+    }
+
+    if (allowedLines.length === 0) {
+      return;
+    }
+
     try {
-      const result = await completeLineasManualBatch(API, selectedLines);
+      const result = await completeLineasManualBatch(API, allowedLines);
       const hasApiError =
         !result?.ok || Boolean(result?.data?.error) || result?.ok === false;
 
@@ -1714,9 +1857,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       }
 
       toast.success(
-        `${selectedLines.length} línea(s) marcadas como completadas manualmente.`,
+        `${allowedLines.length} línea(s) marcadas como completadas manualmente.`,
       );
-      setSelectedLines([]);
+      setSelectedLines((prev) =>
+        prev.filter((id) => !allowedLines.includes(id)),
+      );
       setPedidoRefreshToken((prev) => prev + 1);
     } catch (error) {
       toast.error(
@@ -2116,6 +2261,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   const getPedidoValidationQueue = () => {
+   
     const issues = [];
     const lineas = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
 
@@ -2239,12 +2385,14 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           message: "Falta el identificador para actualizar esta linea.",
         });
       }
+   
     });
 
     return issues;
   };
 
   const notifyValidationIssues = (issues) => {
+   
     if (!issues?.length) return;
 
     if (
@@ -2484,6 +2632,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     const validationQueue = getPedidoValidationQueue();
     const shouldValidateDraft = showInlineEditor;
     const draftIssues = shouldValidateDraft ? getDraftValidationIssues() : [];
+    debugger
 
     if (validationQueue.length > 0 || draftIssues.length > 0) {
       shouldAutoFocusValidationRef.current = validationQueue.length > 0;
@@ -2559,17 +2708,45 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       }),
     };
 
-    const data = await crearAlbaran(API, pedidoConConsumo);
-
-    if (data.error) {
-      toast.error(data.error);
+    let result;
+    try {
+      result = await crearAlbaranTransaccional(API, pedidoConConsumo);
+    } catch {
+      toast.error("No se pudo conectar con el servidor al guardar el pedido");
+      return;
     }
 
-    if (data.message) {
+    const data = result?.data || {};
+
+    if (result?.fallbackUsed) {
+      toast.info(
+        "Backend transaccional no disponible; se ha usado el guardado actual.",
+      );
+    }
+
+    if (!result?.ok) {
+      const stockMessage =
+        data?.code === "STOCK_INSUFICIENTE" ||
+        data?.reason === "stock" ||
+        result?.status === 409
+          ? "No se pudo guardar: stock insuficiente para una o más líneas."
+          : null;
+
+      toast.error(stockMessage || data?.error || "Error al guardar el pedido");
+      return;
+    }
+
+    if (data?.error) {
+      toast.error(data.error);
+      return;
+    }
+
+    if (data?.message) {
       console.log(data.message);
       onAddAlbaran(data.message);
       setPedido({
         numAlbaran: "",
+        clienteId: "",
         cliente: "",
         Nif: "",
         tel: "",
@@ -2597,7 +2774,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         setMateriales(data);
         onClose();
       });
+      return;
     }
+
+    toast.success("Pedido guardado correctamente");
   };
 
   const handleDataExtracted = (data) => {
@@ -2611,6 +2791,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     if (reviewedData.cliente) {
       setPedido((prevPedido) => ({
         ...prevPedido,
+        clienteId: reviewedData.cliente.id || prevPedido.clienteId || "",
         cliente: reviewedData.cliente.nombre || "",
         Nif: reviewedData.cliente.Nif || reviewedData.cliente.nif || "",
         tel: reviewedData.cliente.tel || "",
@@ -2789,6 +2970,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     setIsEditingCliente(false);
     setPedido((prevPedido) => ({
       ...prevPedido,
+      clienteId: "",
       cliente: "",
       Nif: "",
       tel: "",
@@ -2971,7 +3153,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                 type="button"
               >
                 {isViewingPedido ? <FiSave /> : <FiCheck />}
-                {isViewingPedido ? "Guardar edición" : "Guardar "}
+                {isViewingPedido ? "Guardar edición " : "Guardar "}
               </button>
             )}
             {isViewingPedido && isEditMode && (

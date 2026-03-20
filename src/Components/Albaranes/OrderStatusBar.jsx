@@ -40,7 +40,13 @@ function OrderStatusBar({
       return true;
     }
 
-    const pendingTokens = ["pendiente", "sin especificar", "sinespecificar"];
+    const pendingTokens = [
+      "pendiente",
+      "sin especificar",
+      "sinespecificar",
+      "sin color",
+      "sincolor",
+    ];
 
     const hasPendingRal = (warningInfo?.missingRals || []).some((value) => {
       const token = normalizeToken(value);

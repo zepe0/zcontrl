@@ -182,6 +182,12 @@ function PinturaCardEdit({
                           <span className="h-precio">
                             {h?.precio_kg_calculado || h?.precio_kg || "-"} €/kg
                           </span>
+                          <span className="h-precio">
+                            {Number(h?.cantidad_cajas || 0).toLocaleString(
+                              "es-ES",
+                            )}{" "}
+                            caja(s)
+                          </span>
                           <span className="h-prov">
                             {h?.proveedor || "S/P"}
                           </span>

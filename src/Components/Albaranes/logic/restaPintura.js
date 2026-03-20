@@ -14,7 +14,7 @@ const isWildcardPintura = (value) => {
 };
 
 const restaKG = (pinturaResta) => {
-  debugger;
+ 
   if (typeof pinturaResta === "object" && pinturaResta !== null) {
     const isWildcard = [
       pinturaResta.id,

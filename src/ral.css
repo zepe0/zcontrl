@@ -1114,6 +1114,17 @@
   background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png"); /* Textura sutil */
 }
 
+.ral-noir {
+  background-color: #111111;
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 35%,
+    rgba(0, 0, 0, 0.22) 100%
+  );
+  position: relative;
+}
+
 /* Variantes de acabado (Gofrados/Mates) */
 /* Si es gofrado, podemos añadir un brillo diferente con un overlay */
 .gofrado-overlay {

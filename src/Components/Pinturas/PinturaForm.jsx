@@ -49,6 +49,7 @@ function PinturaForm({ isOpen, onClose, onSave, pinturaInicial = null }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
 

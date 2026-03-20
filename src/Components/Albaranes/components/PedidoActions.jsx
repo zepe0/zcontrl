@@ -126,7 +126,7 @@ function PedidoActions({
       {(!isViewingPedido || isEditMode) && (
         <button onClick={onSave} className="btn-guardar" type="button">
           {isViewingPedido ? <FiSave /> : <FiCheck />}
-          {isViewingPedido ? "Guardar edición" : "Guardar"}
+          {isViewingPedido ? "Guardar edición " : "Guardar"}
         </button>
       )}
 

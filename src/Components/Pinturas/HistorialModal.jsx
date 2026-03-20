@@ -43,6 +43,7 @@ function HistorialModal({ pintura, onClose }) {
     precioPromedio,
     precioMin,
     precioMax,
+    totalCajasCompradas,
     trendLabel,
     trendClass,
   } = useMemo(() => {
@@ -76,6 +77,14 @@ function HistorialModal({ pintura, onClose }) {
     const preciosValidos = grafica
       .map((item) => item.precio)
       .filter((n) => Number.isFinite(n) && n > 0);
+    const totalCajas = Number(
+      pintura?.total_cajas_compradas ||
+        historialCompleto.reduce(
+          (acc, h) => acc + (Number(h?.cantidad_cajas) || 0),
+          0,
+        ) ||
+        0,
+    );
 
     const promedio = preciosValidos.length
       ? preciosValidos.reduce((acc, n) => acc + n, 0) / preciosValidos.length
@@ -118,10 +127,11 @@ function HistorialModal({ pintura, onClose }) {
       precioPromedio: promedio,
       precioMin: min,
       precioMax: max,
+      totalCajasCompradas: totalCajas,
       trendLabel: trend,
       trendClass: trendTone,
     };
-  }, [pintura?.historial]);
+  }, [pintura?.historial, pintura?.total_cajas_compradas]);
 
   const exportarExcel = () => {
     if (exportStatus === "loading") return;
@@ -134,6 +144,8 @@ function HistorialModal({ pintura, onClose }) {
             Fecha: formatHistorialDate(
               h?.fecha_compra || h?.fecha || h?.createdAt,
             ),
+            Cajas: Number(h?.cantidad_cajas || 0),
+            "Precio/caja": h?.precio_total_caja || "-",
             "Precio €/kg": h?.precio_kg_calculado || h?.precio_kg || "-",
             Proveedor: h?.proveedor || "S/P",
           })),
@@ -184,6 +196,10 @@ function HistorialModal({ pintura, onClose }) {
                   {precioMin ? precioMin.toFixed(2) : "0.00"} -{" "}
                   {precioMax ? precioMax.toFixed(2) : "0.00"} €/kg
                 </strong>
+              </article>
+              <article className="resumen-card">
+                <span className="resumen-label">Cajas compradas</span>
+                <strong>{totalCajasCompradas.toLocaleString("es-ES")}</strong>
               </article>
             </section>
 
@@ -308,6 +324,8 @@ function HistorialModal({ pintura, onClose }) {
                     <thead>
                       <tr>
                         <th>Fecha</th>
+                        <th className="th-precio">Cajas</th>
+                        <th className="th-precio">Precio/caja</th>
                         <th className="th-precio">Precio €/kg</th>
                         <th>Proveedor</th>
                       </tr>
@@ -319,6 +337,14 @@ function HistorialModal({ pintura, onClose }) {
                             {formatHistorialDate(
                               h?.fecha_compra || h?.fecha || h?.createdAt,
                             )}
+                          </td>
+                          <td className="precio-cell">
+                            {Number(h?.cantidad_cajas || 0).toLocaleString(
+                              "es-ES",
+                            )}
+                          </td>
+                          <td className="precio-cell">
+                            {h?.precio_total_caja || "-"}€
                           </td>
                           <td className="precio-cell">
                             {h?.precio_kg_calculado || h?.precio_kg || "-"}€

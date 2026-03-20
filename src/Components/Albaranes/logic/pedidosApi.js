@@ -131,6 +131,28 @@ export const crearCliente = async (apiBase, cliente) => {
 };
 
 /**
+ * Actualiza un cliente existente.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @param {string} clienteId - Identificador del cliente.
+ * @param {Object} cliente - Datos del cliente.
+ * @returns {Promise<any>} Cliente actualizado.
+ */
+export const actualizarCliente = async (apiBase, clienteId, cliente) => {
+  const response = await fetch(`${apiBase}/api/cliente/${clienteId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cliente),
+  });
+
+  const data = await parseJsonSafe(response);
+  if (!response.ok || data?.error) {
+    throw new Error(data?.error || `Error ${response.status}`);
+  }
+  return data;
+};
+
+/**
  * Crea un nuevo albarán/pedido.
  *
  * @param {string} apiBase - URL base de la API.
@@ -145,6 +167,63 @@ export const crearAlbaran = async (apiBase, pedido) => {
   });
 
   return parseJsonSafe(response);
+};
+
+/**
+ * Crea un nuevo albarán/pedido usando endpoint transaccional.
+ * Si el backend aún no tiene la ruta nueva, hace fallback al endpoint legacy.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @param {Object} pedido - Payload completo del pedido.
+ * @returns {Promise<{ok:boolean,status:number,data:any,mode:"transaccional"|"legacy",fallbackUsed:boolean}>}
+ */
+export const crearAlbaranTransaccional = async (apiBase, pedido) => {
+  try {
+    const response = await fetch(`${apiBase}/api/albaran/add-transaccional`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pedido),
+    });
+
+    const data = await parseJsonSafe(response);
+
+    if (response.ok) {
+      return {
+        ok: true,
+        status: response.status,
+        data,
+        mode: "transaccional",
+        fallbackUsed: false,
+      };
+    }
+
+    if (response.status !== 404) {
+      return {
+        ok: false,
+        status: response.status,
+        data,
+        mode: "transaccional",
+        fallbackUsed: false,
+      };
+    }
+  } catch {
+    // Si falla la llamada al endpoint nuevo por red/CORS, se intenta fallback legacy.
+  }
+
+  const legacyResponse = await fetch(`${apiBase}/api/albaran/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(pedido),
+  });
+  const legacyData = await parseJsonSafe(legacyResponse);
+
+  return {
+    ok: legacyResponse.ok,
+    status: legacyResponse.status,
+    data: legacyData,
+    mode: "legacy",
+    fallbackUsed: true,
+  };
 };
 
 /**

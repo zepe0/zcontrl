@@ -110,7 +110,7 @@
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   margin: 8px 0 2px;
 }
@@ -173,6 +173,36 @@
 .kpi-icon-pending {
   color: #7d5a1f;
   background: #fff2df;
+}
+
+.kpi-icon-noprice {
+  color: #5a6e1f;
+  background: #eef5dc;
+}
+
+.kpi-icon-quality {
+  color: #8b5d17;
+  background: #fff1dc;
+}
+
+.kpi-card--link {
+  border-style: dashed;
+  border-color: #c6d8a2;
+}
+
+.kpi-card--link:hover {
+  border-color: #7a9c2c;
+  background: #f5faec;
+}
+
+.kpi-card--quality {
+  border-style: dashed;
+  border-color: #e4c37e;
+}
+
+.kpi-card--quality:hover {
+  border-color: #b77e1e;
+  background: #fff8ea;
 }
 
 .kpi-label {

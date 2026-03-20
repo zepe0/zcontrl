@@ -56,11 +56,27 @@ function Albaranes() {
       setAlbaran(data);
     });
 
+    socket.on("estadoPedidoActualizado", (data) => {
+      console.log("Estado de pedido actualizado:", data);
+      const { pedidoId, estado, cambioAutomatico } = data;
+
+      if (cambioAutomatico) {
+        toast.info(`Pedido ${pedidoId} cambió a ${estado} por falta de stock`);
+      }
+
+      setAlbaran((prevAlbaranes) =>
+        prevAlbaranes.map((item) =>
+          item.id === pedidoId ? { ...item, proceso: estado } : item,
+        ),
+      );
+    });
+
     return () => {
       socket.off("Actualizar_pintura");
       socket.off("albaranModificado");
       socket.off("pinturaModificada");
       socket.off("actualizarAlbaranes");
+      socket.off("estadoPedidoActualizado");
     };
   }, []);
 
@@ -103,7 +119,7 @@ function Albaranes() {
     <section className="home">
       <Nav className="nav" />
 
-      <div className= "p-40 m-90 *">
+      <div className="p-40 m-90 *">
         <div className="listaalbaranes">
           <h2>Albaranes</h2>
 

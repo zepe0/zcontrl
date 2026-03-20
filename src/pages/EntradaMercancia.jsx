@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiBox,
   FiPackage,
@@ -12,10 +12,11 @@ import { toast } from "react-toastify";
 import "./EntradaMercancia.css";
 import { parseRalString } from "../Components/Pinturas/logic/parseRal";
 import { createNewPintura } from "../Components/Pinturas/logic/pinturaOperations";
+import socket from "../socket/socket";
 
 const API = import.meta.env.VITE_API || "localhost";
 
-function EntradaMercancia({ isOpen, onClose }) {
+function EntradaMercancia({ isOpen, onClose, onAlbaranProcesado }) {
   const [pinturas, setPinturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -23,6 +24,8 @@ function EntradaMercancia({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateOption, setShowCreateOption] = useState(null);
   const [isCreatingPintura, setIsCreatingPintura] = useState(false);
+  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+  const proveedorRefs = useRef({});
 
   useEffect(() => {
     fetch(`${API}/api/pintura/lista-completa`)
@@ -95,10 +98,11 @@ function EntradaMercancia({ isOpen, onClose }) {
       return;
     }
 
+    const newRowId = `${pinturaId}-${Date.now()}`;
     setLineas((prev) => [
       ...prev,
       {
-        rowId: `${pinturaId}-${Date.now()}`,
+        rowId: newRowId,
         pintura_id: pinturaId,
         ral: String(pintura?.ral || "SIN RAL"),
         marca: String(pintura?.marca || ""),
@@ -110,6 +114,13 @@ function EntradaMercancia({ isOpen, onClose }) {
     ]);
 
     setSearch("");
+    setSelectedResultIndex(-1);
+
+    // Autofocus al proveedor de la nueva línea
+    setTimeout(() => {
+      const ref = proveedorRefs.current?.[newRowId];
+      if (ref) ref.focus();
+    }, 50);
   };
 
   const removeLinea = (rowId) => {
@@ -147,6 +158,11 @@ function EntradaMercancia({ isOpen, onClose }) {
       // Agregar como línea al albarán
       addLinea(pinturaProcesada);
 
+      // Emitir evento Socket.IO para actualizar en tiempo real
+      socket.emit("nuevaPinturaCreada", {
+        pintura: pinturaProcesada,
+      });
+
       toast.success(
         `Pintura "RAL ${pinturaProcesada.ral}" creada y añadida al albarán`,
       );
@@ -171,6 +187,46 @@ function EntradaMercancia({ isOpen, onClose }) {
           : linea,
       ),
     );
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (!search.trim()) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedResultIndex((prev) => {
+        const nextIndex = prev + 1;
+        return nextIndex < resultados.length ? nextIndex : prev;
+      });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedResultIndex((prev) => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedResultIndex >= 0 && selectedResultIndex < resultados.length) {
+        addLinea(resultados[selectedResultIndex]);
+        setSelectedResultIndex(-1);
+      } else if (showCreateOption) {
+        handleCreateAndAddPintura();
+      }
+    }
+  };
+
+  useEffect(() => {
+    setSelectedResultIndex(-1);
+  }, [search]);
+
+  const handleNumericArrow = (event, rowId, field, currentValue, step, min) => {
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+
+    event.preventDefault();
+    const direction = event.key === "ArrowUp" ? 1 : -1;
+    const base = toNumber(currentValue);
+    const next = Math.max(base + direction * step, min);
+    const nextValue = Number.isInteger(step)
+      ? String(Math.round(next))
+      : next.toFixed(2);
+    updateLinea(rowId, field, nextValue);
   };
 
   const toNumber = (value) => {
@@ -262,6 +318,17 @@ function EntradaMercancia({ isOpen, onClose }) {
 
       toast.success(result?.message || "Albaran procesado correctamente");
       setLineas([]);
+
+      // Emitir evento Socket.IO para recargar catálogo en tiempo real
+      socket.emit("albaranProcesado");
+
+      // Llamar al callback para actualizar Pinturas y cerrar modal
+      if (onAlbaranProcesado) {
+        onAlbaranProcesado();
+      }
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Error procesando albaran:", error);
       toast.error(error?.message || "Error al procesar el albaran");
@@ -271,10 +338,16 @@ function EntradaMercancia({ isOpen, onClose }) {
   };
 
   return isOpen ? (
-    <div className="entrada-modal-overlay">
-      <div className="entrada-modal">
+    <div className="entrada-modal-overlay" onClick={onClose}>
+      <div
+        className="entrada-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         <button
           className="entrada-modal-close"
+          type="button"
           onClick={onClose}
           aria-label="Cerrar"
         >
@@ -319,6 +392,7 @@ function EntradaMercancia({ isOpen, onClose }) {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               placeholder="Ejemplo: 7016, axalta, ref..."
               disabled={loading}
             />
@@ -328,12 +402,13 @@ function EntradaMercancia({ isOpen, onClose }) {
             <>
               {resultados.length > 0 && (
                 <ul className="entrada-results" role="listbox">
-                  {resultados.map((p) => (
+                  {resultados.map((p, idx) => (
                     <li key={p.id}>
                       <button
                         type="button"
-                        className="entrada-result-btn"
+                        className={`entrada-result-btn ${selectedResultIndex === idx ? "selected" : ""}`}
                         onClick={() => addLinea(p)}
+                        onMouseEnter={() => setSelectedResultIndex(idx)}
                       >
                         <strong>{String(p?.ral || "SIN RAL")}</strong>
                         <span>{String(p?.marca || "Sin marca")}</span>
@@ -417,6 +492,9 @@ function EntradaMercancia({ isOpen, onClose }) {
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (el) proveedorRefs.current[linea.rowId] = el;
+                          }}
                           className="table-input"
                           type="text"
                           value={linea.proveedor}
@@ -437,7 +515,18 @@ function EntradaMercancia({ isOpen, onClose }) {
                             type="number"
                             min="1"
                             step="1"
+                            inputMode="numeric"
                             value={linea.cantidad_cajas}
+                            onKeyDown={(e) =>
+                              handleNumericArrow(
+                                e,
+                                linea.rowId,
+                                "cantidad_cajas",
+                                linea.cantidad_cajas,
+                                1,
+                                1,
+                              )
+                            }
                             onChange={(e) =>
                               updateLinea(
                                 linea.rowId,
@@ -452,7 +541,18 @@ function EntradaMercancia({ isOpen, onClose }) {
                             type="number"
                             min="0"
                             step="0.01"
+                            inputMode="decimal"
                             value={linea.formato_kg}
+                            onKeyDown={(e) =>
+                              handleNumericArrow(
+                                e,
+                                linea.rowId,
+                                "formato_kg",
+                                linea.formato_kg,
+                                0.01,
+                                0,
+                              )
+                            }
                             onChange={(e) =>
                               updateLinea(
                                 linea.rowId,
@@ -466,11 +566,22 @@ function EntradaMercancia({ isOpen, onClose }) {
                       <td className="numeric">{linea.totalKg.toFixed(2)} kg</td>
                       <td>
                         <input
-                          className="table-input"
+                          className="table-input table-input-md"
                           type="number"
                           min="0"
                           step="0.01"
+                          inputMode="decimal"
                           value={linea.precio_total}
+                          onKeyDown={(e) =>
+                            handleNumericArrow(
+                              e,
+                              linea.rowId,
+                              "precio_total",
+                              linea.precio_total,
+                              0.01,
+                              0,
+                            )
+                          }
                           onChange={(e) =>
                             updateLinea(
                               linea.rowId,

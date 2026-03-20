@@ -31,7 +31,6 @@ function MarterialesEdit({
     const formData = {};
     const inputsArray = Array.from(inputs);
     inputsArray.forEach((input) => {
-    
       const name = input.name;
       const value = input.value || input.placeholder;
       if (name) formData[name] = value;

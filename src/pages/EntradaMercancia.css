@@ -34,8 +34,8 @@
 
 .entrada-modal-close {
   position: absolute;
-  top: -40px;
-  right: 0;
+  top: 10px;
+  right: 10px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -83,7 +83,7 @@
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 18px 20px;
+  padding: 18px 64px 18px 20px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -198,10 +198,16 @@
   cursor: pointer;
   text-align: left;
   color: #0f172a;
+  transition: background-color 0.15s;
 }
 
 .entrada-result-btn:hover {
   background: #f8fafc;
+}
+
+.entrada-result-btn.selected {
+  background: #dbeafe;
+  border-left: 3px solid #2563eb;
 }
 
 .entrada-result-btn span {
@@ -227,7 +233,7 @@
 .entrada-table th,
 .entrada-table td {
   border-bottom: 1px solid #e2e8f0;
-  padding: 10px;
+  padding: 12px 16px;
   text-align: left;
   vertical-align: middle;
 }
@@ -271,6 +277,10 @@
 }
 
 .table-input-sm {
+  max-width: 80px;
+}
+
+.table-input-md {
   max-width: 110px;
 }
 
@@ -418,5 +428,9 @@
   .entrada-table-card {
     border-radius: 12px;
     padding: 12px;
+  }
+
+  .entrada-header {
+    padding-right: 52px;
   }
 }
