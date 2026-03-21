@@ -1773,7 +1773,27 @@ textarea {
   .dialog-footer {
     flex-direction: column;
   }
+  /* Estilo para que el input parezca texto simple */
+  .readonly-material-input[readonly] {
+    background-color: transparent !important; /* Quita el fondo blanco */
+    border: 1px solid transparent !important; /* Quita el borde de input */
+    box-shadow: none !important; /* Quita sombras */
+    cursor: default; /* Flecha normal, no cursor de texto */
+    color: #374151; /* Un color gris oscuro/negro sólido */
+    font-weight: 500; /* Un poco más grueso para que resalte como dato fijo */
+    outline: none !important; /* Evita el recuadro azul al hacer clic */
+    padding-left: 0; /* Alinea con el borde si es necesario */
+  }
 
+  /* Opcional: si quieres que se note un poco que está ahí pero bloqueado */
+  .readonly-material-input[readonly]:hover {
+    background-color: rgba(
+      0,
+      0,
+      0,
+      0.02
+    ); /* Un toque sutil al pasar el ratón */
+  }
   .obs-panel-valued,
   .footer-totals {
     flex: 1 1 auto;

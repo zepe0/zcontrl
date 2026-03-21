@@ -35,6 +35,7 @@ import {
   saveTarifasEstandar,
   updateMaterialLine,
   updatePedidoEstado,
+  updatePedidoCompleto,
 } from "./logic/pedidosApi";
 import { toast } from "react-toastify";
 import {
@@ -677,6 +678,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   const handleRemoveMaterialLine = (indexToRemove) => {
+    debugger;
     const removedLine = pedido?.albaran?.[indexToRemove];
     const removedLineId =
       removedLine?.lineId || removedLine?.idLinea || removedLine?.id || null;
@@ -826,18 +828,47 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const handleLineFieldChange = (index, field, value) => {
     clearValidationIssueForChange(index, field);
 
+    // 1. Definimos qué campos SÍ representan un cambio de material real.
+    // Ajusta "nombre" si el campo en tu input se llama de otra forma.
+    const isMaterialChange = field === "nombre" || field === "idMaterial";
+
     setPedido((prevPedido) => {
       const next = [...prevPedido.albaran];
-      next[index] = getLineWithFieldChange(next[index], field, value);
+
+      // Guardamos el ID que tiene la línea justo ahora (el ID limpio de la DB)
+      const idOriginal = next[index].idMaterial;
+
+      // Calculamos la nueva línea (esto es lo que te ensucia el ID)
+      let newLine = getLineWithFieldChange(next[index], field, value);
+
+      // 2. Si el cambio NO es de material (es decir, es espesor, cantidad, etc.)
+      // Forzamos que recupere el ID original
+      if (!isMaterialChange) {
+        newLine.idMaterial = idOriginal;
+        // Si también usas la propiedad producto_id, límpiala también
+        if (newLine.producto_id) newLine.producto_id = idOriginal;
+      }
+
+      next[index] = newLine;
       return {
         ...prevPedido,
         albaran: next,
       };
     });
 
+    // Repetimos la lógica de protección para el estado de materiales
     setMateriales((prev) => {
       const next = [...prev];
-      next[index] = getLineWithFieldChange(next[index], field, value);
+      const idOriginal = next[index].idMaterial;
+
+      let newLine = getLineWithFieldChange(next[index], field, value);
+
+      if (!isMaterialChange) {
+        newLine.idMaterial = idOriginal;
+        if (newLine.producto_id) newLine.producto_id = idOriginal;
+      }
+
+      next[index] = newLine;
       return next;
     });
   };
@@ -1150,6 +1181,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       : (linea?.precio_sugerido ?? linea?.precio_unitario);
 
     return {
+      id_linea: getLineIdentifier(linea),
       idMaterial: linea?.idMaterial || linea?.ref,
       producto_id: linea?.idMaterial || linea?.ref,
       cantidad: linea?.cantidad,
@@ -1672,6 +1704,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       }
 
       // Actualizar el estado local si el servidor lo aceptó
+
       setPedido((prevPedido) => ({
         ...prevPedido,
         estado: toStatus,
@@ -2166,6 +2199,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
   const handleObservacionesChange = (e) => {
     const { value } = e.target;
+
     setPedido((prevPedido) => ({
       ...prevPedido,
       observaciones: value,
@@ -2261,8 +2295,9 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   };
 
   const getPedidoValidationQueue = () => {
-   
     const issues = [];
+
+    if (pedido?.albaran.length === 0 && isEditMode) return issues;
     const lineas = Array.isArray(pedido?.albaran) ? pedido.albaran : [];
 
     if (!String(pedido?.cliente || "").trim()) {
@@ -2376,23 +2411,22 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
           message: "Indica precio unitario mayor que 0 (modo valorado).",
         });
       }
-
-      if (isViewingPedido && !(linea?.idMaterial || linea?.ref)) {
-        issues.push({
-          scope: "linea",
-          lineNo,
-          field: "idMaterial",
-          message: "Falta el identificador para actualizar esta linea.",
-        });
+      if (isModified) {
+        if (isViewingPedido && !(linea?.idMaterial || linea?.ref)) {
+          issues.push({
+            scope: "linea",
+            lineNo,
+            field: "idMaterial",
+            message: "Falta el identificador para actualizar esta linea.",
+          });
+        }
       }
-   
     });
 
     return issues;
   };
 
   const notifyValidationIssues = (issues) => {
-   
     if (!issues?.length) return;
 
     if (
@@ -2404,7 +2438,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
       return;
     }
 
-    toast.error("Rellena las casillas marcadas en rojo.");
+    toast.error(
+      issues[0]?.message
+        ? issues[0].message
+        : "Hay campos incompletos o con errores.",
+    );
   };
 
   const clearValidationIssueForChange = (index, field) => {
@@ -2632,7 +2670,6 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     const validationQueue = getPedidoValidationQueue();
     const shouldValidateDraft = showInlineEditor;
     const draftIssues = shouldValidateDraft ? getDraftValidationIssues() : [];
-    debugger
 
     if (validationQueue.length > 0 || draftIssues.length > 0) {
       shouldAutoFocusValidationRef.current = validationQueue.length > 0;
@@ -2651,15 +2688,19 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     shouldAutoFocusValidationRef.current = false;
     shouldAutoFocusDraftRef.current = false;
 
+    if (isEditMode && pedido?.albaran?.length === 0) {
+      debugger;
+      toast.error(
+        "No puedes dejar un pedido sin líneas. Añade al menos una línea o cancela la edición.",
+      );
+      return;
+    }
     if (isViewingPedido) {
       let anyError = false;
 
       for (const prod of pedido.albaran) {
         try {
-          const result = await updateMaterialLine(
-            API,
-            buildLineUpdatePayload(prod, { estado: pedido.estado }),
-          );
+          const result = await updatePedidoCompleto(API, pedido.id, pedido);
 
           if (!result.ok) {
             anyError = true;
@@ -2710,7 +2751,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
     let result;
     try {
-      result = await crearAlbaranTransaccional(API, pedidoConConsumo);
+      if (isModified) {
+        result = await updatePedidoCompleto(API, { pedido: pedidoConConsumo });
+      } else {
+        result = await crearAlbaranTransaccional(API, pedidoConConsumo);
+      }
     } catch {
       toast.error("No se pudo conectar con el servidor al guardar el pedido");
       return;
@@ -2742,8 +2787,10 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     }
 
     if (data?.message) {
-      console.log(data.message);
+      toast.success("Pedido guardado correctamente");
+
       onAddAlbaran(data.message);
+
       setPedido({
         numAlbaran: "",
         clienteId: "",
@@ -2788,6 +2835,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
   const handleReviewConfirm = (reviewedData) => {
     // Procesar los datos revisados y confirmados
+
     if (reviewedData.cliente) {
       setPedido((prevPedido) => ({
         ...prevPedido,
@@ -3766,24 +3814,19 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
                         {isEditMode ? (
                           <>
                             <span className="material-input-with-unit">
-                              <input
+                              <p
+                                readOnly={true}
                                 list="materiales-catalogo"
-                                className={`inline-line-input line-edit-field ${isIssueField(index, "nombre") ? "validation-focus" : ""}`}
+                                className="readonly-material-input[readonly]]"
                                 type="text"
                                 value={material.mat || ""}
-                                disabled={isManual}
-                                onChange={(e) =>
-                                  handleLineFieldChange(
-                                    index,
-                                    "mat",
-                                    e.target.value,
-                                  )
-                                }
                                 placeholder="Material"
                                 aria-invalid={isIssueField(index, "nombre")}
                                 data-line-index={index}
                                 data-field="nombre"
-                              />
+                              >
+                                {material.mat || ""}
+                              </p>
                               <select
                                 className="unit-select line-edit-field"
                                 value={normalizeUnit(material.unidad_medida)}

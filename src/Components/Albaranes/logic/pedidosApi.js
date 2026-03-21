@@ -15,6 +15,26 @@ const parseJsonSafe = async (response) => {
   }
 };
 
+
+/**
+ * Modifica un pedido existente con el payload completo del pedido.
+ *
+ * @param {string} apiBase - URL base de la API.
+ * @param {string|number} pedidoId - Identificador del pedido.
+ * @param {Object} payload - Payload completo del pedido a actualizar.
+ * @returns {Promise<any>} JSON de respuesta de la API.
+ */
+
+export const updatePedidoCompleto = async (apiBase, pedidoId, payload) => {
+  
+  return await fetch(`${apiBase}/api/pedidos/update/${pedidoId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+};
+
+
 /**
  * Obtiene el detalle completo de un pedido/albarán por id.
  *
