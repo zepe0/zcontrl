@@ -160,6 +160,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
   const [tarifasEstandar, setTarifasEstandar] = useState([]);
   const [showReview, setShowReview] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
+  const [liniasaBorrar, setLiniasaBorrar] = useState([]);
 
   const [pedido, setPedido] = useState({
     numAlbaran: "",
@@ -679,6 +680,11 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
 
   const handleRemoveMaterialLine = (indexToRemove) => {
     debugger;
+
+    if (pedido?.albaran?.length === 1) {
+      setLiniasaBorrar([pedido.albaran[0].lineId]);
+      updatePedidoCompleto(API, liniasaBorrar, { albaran: [] });
+    }
     const removedLine = pedido?.albaran?.[indexToRemove];
     const removedLineId =
       removedLine?.lineId || removedLine?.idLinea || removedLine?.id || null;
@@ -2338,7 +2344,7 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
         linea?.tiene_imprimacion === true ||
         linea?.tiene_imprimacion === 1 ||
         linea?.tiene_imprimacion === "1";
-
+debugger
       if (!String(linea?.mat || linea?.nombreMaterial || "").trim()) {
         issues.push({
           scope: "linea",
@@ -2689,10 +2695,17 @@ function AddPedido({ onAddAlbaran, onClose, pedidoId = null }) {
     shouldAutoFocusDraftRef.current = false;
 
     if (isEditMode && pedido?.albaran?.length === 0) {
+      const result = await updatePedidoCompleto(API, pedido.id, {
+        albaran: [],
+      });
       debugger;
-      toast.error(
-        "No puedes dejar un pedido sin líneas. Añade al menos una línea o cancela la edición.",
-      );
+      if (!result.ok) {
+        toast.error("No se pudo eliminar las líneas del pedido.");
+        return;
+      }
+      toast.success("Pedido actualizado correctamente");
+      setIsEditMode(false);
+      onAddAlbaran && onAddAlbaran("updated");
       return;
     }
     if (isViewingPedido) {

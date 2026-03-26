@@ -14,10 +14,17 @@ DEFAULT_IVA_RATE = 0.21: El IVA aplicado es del 21%.
 const DEFAULT_ESPESOR_RECARGO_MM = 3;
 const DEFAULT_ESPESOR_RECARGO_FACTOR = 1.1;
 const DEFAULT_IVA_RATE = 0.21;
-const DEFAULT_PAINT_CONSUMPTION_M2_RATIO = 0.24;
+// Consumo orientativo de pintura: 0.24 kg/m2, basado en datos de consumo para pinturas de uso general en superficies lisas.
+const DEFAULT_PAINT_CONSUMPTION_M2_RATIO = 0.24; 
+
+
 // Desarrollo perimetral medio asumido para líneas ml sin ancho: 1.25 m × 0.24 = 0.30
-const DEFAULT_ML_DEVELOPMENT_M = 1.25;
-const DEFAULT_PAINT_CONSUMPTION_UD_BASE = 0.12;
+// Consumo base por unidad sin medidas: 0.12 kg/ud, basado en consumo de piezas pequeñas.
+// Para líneas ml sin ancho, el consumo se estima con un desarrollo perimetral medio de 1.25 m, lo que da un consumo de 0.30 kg/ml (1.25 m × 0.24 kg/m2).
+// Estos valores pueden ajustarse según datos reales de consumo o requisitos específicos.
+
+const DEFAULT_ML_DEVELOPMENT_M = 1.25; 
+const DEFAULT_PAINT_CONSUMPTION_UD_BASE = 0.12; 
 
 /**
  * Convierte un valor a numero de forma segura.
